@@ -35,7 +35,7 @@
   async function loadStats() {
     if (!$user?.id) return
 
-    isLoading = true // optional: set to true at start
+    isLoading = true
     try {
       const response = await fetch(`/api/stats?userId=${$user.id}`)
       if (response.ok) {
@@ -47,12 +47,35 @@
     } catch (e) {
       console.error('Failed to load stats:', e)
     } finally {
-      isLoading = false // <-- This is missing!
+      isLoading = false
     }
   }
 
   // Calculate max for week chart
   $: maxSets = Math.max(...weekStats.map(d => d.sets), 1)
+
+  // Group cycles by exercise for progress tracking
+  $: cyclesByExercise = cycleHistory.reduce(
+    (acc, cycle) => {
+      if (!acc[cycle.exerciseName]) acc[cycle.exerciseName] = []
+      acc[cycle.exerciseName].push(cycle)
+      return acc
+    },
+    {} as Record<string, typeof cycleHistory>,
+  )
+
+  // Calculate progress only for exercises with multiple cycles
+  $: exercisesWithProgress = Object.entries(cyclesByExercise)
+    .filter(([_, cycles]) => cycles.length > 1)
+    .map(([name, cycles]) => {
+      // Sort by date ascending to get first and last
+      const sortedCycles = [...cycles].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+      const firstMax = sortedCycles[0]?.maxReps || 0
+      const lastMax = sortedCycles[sortedCycles.length - 1]?.maxReps || 0
+      const improvement = lastMax - firstMax
+      const percentImprovement = firstMax > 0 ? ((improvement / firstMax) * 100).toFixed(1) : '0'
+      return { name, firstMax, lastMax, improvement, percentImprovement }
+    })
 
   // Get day name
   function getDayName(dateStr: string): string {
@@ -214,45 +237,65 @@
       </section>
     {/if}
 
-    <!-- Max improvement chart -->
-    {#if cycleHistory.length > 1}
-      {@const firstMax = cycleHistory[cycleHistory.length - 1]?.maxReps || 0}
-      {@const lastMax = cycleHistory[0]?.maxReps || 0}
-      {@const improvement = lastMax - firstMax}
-      {@const percentImprovement = firstMax > 0 ? ((improvement / firstMax) * 100).toFixed(1) : 0}
+    <!-- Max improvement chart - POR EJERCICIO -->
+    {#if exercisesWithProgress.length > 0}
       <section class="card p-5 animate-fade-in" style="animation-delay: 0.3s;">
         <h2 class="font-semibold text-surface-900 dark:text-surface-900 mb-4">
           {$_('stats.maxImprovement')}
         </h2>
 
-        <div class="flex items-center justify-center gap-8">
-          <div class="text-center">
-            <p class="text-xs text-surface-500 dark:text-surface-400 uppercase">
-              {$_('common.yesterday')}
-            </p>
-            <p class="num-display text-2xl text-surface-900 dark:text-surface-900">
-              {firstMax}
-            </p>
-          </div>
+        <div class="space-y-4">
+          {#each exercisesWithProgress as prog}
+            {@const exercise = $exercises.find(e => e.name === prog.name)}
+            <div class="flex items-center gap-4">
+              <div
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0"
+                style="background-color: {exercise?.color || '#6366f1'}20;"
+              >
+                {exercise?.icon || '💪'}
+              </div>
 
-          <div class="flex flex-col items-center">
-            <svg class="w-8 h-8 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
-            <span class="text-sm font-semibold text-green-500">
-              +{percentImprovement}%
-            </span>
-          </div>
+              <div class="flex-1 flex items-center justify-between">
+                <div class="text-center">
+                  <p class="text-xs text-surface-500 dark:text-surface-400 uppercase">
+                    {$_('stats.first')}
+                  </p>
+                  <p class="num-display text-xl text-surface-900 dark:text-surface-900">
+                    {prog.firstMax}
+                  </p>
+                </div>
 
-          <div class="text-center">
-            <p class="text-xs text-surface-500 dark:text-surface-400 uppercase">
-              {$_('common.today')}
-            </p>
-            <p class="num-display text-2xl text-green-600 dark:text-green-400">
-              {lastMax}
-            </p>
-          </div>
+                <div class="flex flex-col items-center">
+                  <svg
+                    class="w-6 h-6 {prog.improvement >= 0 ? 'text-green-500' : 'text-red-500'}"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                  <span class="text-xs font-semibold {prog.improvement >= 0 ? 'text-green-500' : 'text-red-500'}">
+                    {prog.improvement >= 0 ? '+' : ''}{prog.percentImprovement}%
+                  </span>
+                </div>
+
+                <div class="text-center">
+                  <p class="text-xs text-surface-500 dark:text-surface-400 uppercase">
+                    {$_('stats.current')}
+                  </p>
+                  <p
+                    class="num-display text-xl {prog.improvement >= 0
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-red-600 dark:text-red-400'}"
+                  >
+                    {prog.lastMax}
+                  </p>
+                </div>
+              </div>
+            </div>
+          {/each}
         </div>
       </section>
     {/if}
