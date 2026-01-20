@@ -29,5 +29,10 @@
   "dependencies": {
     "@clerk/clerk-js": "^5.0.0",
     "svelte-i18n": "^4.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

@@ -1,9 +1,8 @@
+import devtoolsJson from 'vite-plugin-devtools-json'
 import { sveltekit } from '@sveltejs/kit/vite'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  plugins: [sveltekit()],
-  optimizeDeps: {
-    exclude: ['@clerk/clerk-js'],
-  },
+  plugins: [sveltekit(), devtoolsJson()],
+  optimizeDeps: { exclude: ['@clerk/clerk-js'] },
 })

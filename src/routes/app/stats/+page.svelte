@@ -35,6 +35,7 @@
   async function loadStats() {
     if (!$user?.id) return
 
+    isLoading = true // optional: set to true at start
     try {
       const response = await fetch(`/api/stats?userId=${$user.id}`)
       if (response.ok) {
@@ -45,6 +46,8 @@
       }
     } catch (e) {
       console.error('Failed to load stats:', e)
+    } finally {
+      isLoading = false // <-- This is missing!
     }
   }
 
