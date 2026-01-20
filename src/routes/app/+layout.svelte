@@ -66,7 +66,7 @@
   }
 </script>
 
-<div class="page-container bg-surface-50 dark:bg-surface-950">
+<div class="page-container bg-surface-50 dark:bg-black">
   {#if $isLoading}
     <div class="flex items-center justify-center min-h-screen">
       <div class="flex flex-col items-center gap-4">

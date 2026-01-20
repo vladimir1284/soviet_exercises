@@ -28,7 +28,7 @@
   <Toast />
   <slot />
 {:else}
-  <div class="min-h-screen flex items-center justify-center bg-surface-50 dark:bg-surface-950">
+  <div class="min-h-screen flex items-center justify-center bg-surface-50 dark:bg-black">
     <div class="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
   </div>
 {/if}
