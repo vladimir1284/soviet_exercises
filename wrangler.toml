@@ -5,7 +5,7 @@ pages_build_output_dir = ".svelte-kit/cloudflare"
 [[d1_databases]]
 binding = "DB"
 database_name = "flexfit-db"
-database_id = "YOUR_DATABASE_ID_HERE"
+database_id = "4c362aa3-3e4f-4434-884f-ae1d810a0462"
 
 [vars]
-PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_YOUR_KEY_HERE"
+PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_ZHluYW1pYy1pbXBhbGEtNTUuY2xlcmsuYWNjb3VudHMuZGV2JA"
