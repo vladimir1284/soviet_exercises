@@ -1,0 +1,17 @@
+# Dependencies
+node_modules
+
+# SvelteKit build artifacts
+/.svelte-kit
+/build
+/package
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Editor/OS files
+.DS_Store
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*

@@ -1,0 +1,82 @@
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
+  import { goto } from '$app/navigation';
+  import { _ } from 'svelte-i18n';
+  import { BottomNav } from '$components';
+  import { user, exercises, cycles, todaySets, settings, isLoading } from '$stores';
+  
+  let clerk: any = null;
+  
+  onMount(async () => {
+    if (!browser) return;
+    
+    // Load Clerk
+    const Clerk = (await import('@clerk/clerk-js')).default;
+    clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key');
+    
+    await clerk.load();
+    
+    if (!clerk.user) {
+      goto('/');
+      return;
+    }
+    
+    // Set user data
+    user.set({
+      id: 0,
+      clerkId: clerk.user.id,
+      email: clerk.user.primaryEmailAddress?.emailAddress || '',
+      name: clerk.user.firstName || clerk.user.username || 'User',
+      locale: 'es',
+      theme: 'system'
+    });
+    
+    // Load user data from API
+    await loadUserData();
+    
+    isLoading.set(false);
+  });
+  
+  async function loadUserData() {
+    try {
+      const response = await fetch('/api/user/init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clerkId: clerk.user.id,
+          email: clerk.user.primaryEmailAddress?.emailAddress,
+          name: clerk.user.firstName
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        user.update(u => u ? { ...u, id: data.user.id } : u);
+        exercises.set(data.exercises || []);
+        cycles.set(data.cycles || []);
+        todaySets.set(data.todaySets || []);
+        if (data.settings) {
+          settings.set(data.settings);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load user data:', e);
+    }
+  }
+</script>
+
+<div class="page-container bg-surface-50 dark:bg-surface-950">
+  {#if $isLoading}
+    <div class="flex items-center justify-center min-h-screen">
+      <div class="flex flex-col items-center gap-4">
+        <div class="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+        <p class="text-surface-500 dark:text-surface-400">{$_('common.loading')}</p>
+      </div>
+    </div>
+  {:else}
+    <slot />
+  {/if}
+  
+  <BottomNav />
+</div>
