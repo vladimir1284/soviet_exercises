@@ -1,5 +1,5 @@
-import adapter from '@sveltejs/adapter-cloudflare';
-import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import adapter from '@sveltejs/adapter-cloudflare'
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte'
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -8,16 +8,16 @@ const config = {
     adapter: adapter({
       routes: {
         include: ['/*'],
-        exclude: ['<all>']
-      }
+        exclude: ['<all>'],
+      },
     }),
     alias: {
       $components: 'src/lib/components',
       $stores: 'src/lib/stores',
       $i18n: 'src/lib/i18n',
-      $db: 'src/lib/db'
-    }
-  }
-};
+      $db: 'src/lib/db',
+    },
+  },
+}
 
-export default config;
+export default config

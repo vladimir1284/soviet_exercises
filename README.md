@@ -32,6 +32,7 @@ A progressive exercise tracking app built with SvelteKit and deployed on Cloudfl
 ### Installation
 
 1. **Clone and install dependencies**
+
    ```bash
    git clone <repo>
    cd flexfit
@@ -44,38 +45,42 @@ A progressive exercise tracking app built with SvelteKit and deployed on Cloudfl
    - Copy your publishable key
 
 3. **Set up Cloudflare D1**
+
    ```bash
    # Login to Cloudflare
    npx wrangler login
-   
+
    # Create the database
    npx wrangler d1 create flexfit-db
-   
+
    # Copy the database_id to wrangler.toml
    ```
 
 4. **Configure environment**
+
    ```bash
    # Create .env file
    echo "VITE_CLERK_PUBLISHABLE_KEY=pk_test_your_key" > .env
    ```
 
 5. **Run database migrations**
+
    ```bash
    # Local development
    npm run db:migrate:local
-   
+
    # Production
    npm run db:migrate
    ```
 
 6. **Update wrangler.toml**
+
    ```toml
    [[d1_databases]]
    binding = "DB"
    database_name = "flexfit-db"
    database_id = "YOUR_DATABASE_ID_HERE"
-   
+
    [vars]
    PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_YOUR_KEY"
    ```

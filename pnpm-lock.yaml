@@ -30,6 +30,12 @@ importers:
       postcss:
         specifier: ^8.4.32
         version: 8.5.6
+      prettier:
+        specifier: ^3.8.0
+        version: 3.8.0
+      prettier-plugin-svelte:
+        specifier: ^3.4.1
+        version: 3.4.1(prettier@3.8.0)(svelte@4.2.20)
       svelte:
         specifier: ^4.2.8
         version: 4.2.20
@@ -2904,6 +2910,17 @@ packages:
 
   preact@10.28.2:
     resolution: {integrity: sha512-lbteaWGzGHdlIuiJ0l2Jq454m6kcpI1zNje6d8MlGAFlYvP2GO4ibnat7P74Esfz4sPTdM6UxtTwh/d3pwM9JA==}
+
+  prettier-plugin-svelte@3.4.1:
+    resolution: {integrity: sha512-xL49LCloMoZRvSwa6IEdN2GV6cq2IqpYGstYtMT+5wmml1/dClEoI0MZR78MiVPpu6BdQFfN0/y73yO6+br5Pg==}
+    peerDependencies:
+      prettier: ^3.0.0
+      svelte: ^3.2.0 || ^4.0.0-next.0 || ^5.0.0-next.0
+
+  prettier@3.8.0:
+    resolution: {integrity: sha512-yEPsovQfpxYfgWNhCfECjG5AQaO+K3dp6XERmOepyPDVqcJm+bjyCVO3pmU+nAPe0N5dDvekfGezt/EIiRe1TA==}
+    engines: {node: '>=14'}
+    hasBin: true
 
   pretty-format@29.7.0:
     resolution: {integrity: sha512-Pdlw/oPxN+aXdmM9R00JVC9WVFoCLTKJvDVLgmJ+qAffBMxsV85l/Lu7sNx4zSzPyoL2euImuEwHhOXdEgNFZQ==}
@@ -6456,6 +6473,13 @@ snapshots:
   preact@10.24.2: {}
 
   preact@10.28.2: {}
+
+  prettier-plugin-svelte@3.4.1(prettier@3.8.0)(svelte@4.2.20):
+    dependencies:
+      prettier: 3.8.0
+      svelte: 4.2.20
+
+  prettier@3.8.0: {}
 
   pretty-format@29.7.0:
     dependencies:

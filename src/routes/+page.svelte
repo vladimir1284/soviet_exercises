@@ -1,54 +1,52 @@
 <script lang="ts">
-  import { _ } from "svelte-i18n";
-  import { onMount } from "svelte";
-  import { browser } from "$app/environment";
-  import { goto } from "$app/navigation";
+  import { _ } from 'svelte-i18n'
+  import { onMount } from 'svelte'
+  import { browser } from '$app/environment'
+  import { goto } from '$app/navigation'
 
-  let clerk: any = null;
-  let isLoading = true;
+  let clerk: any = null
+  let isLoading = true
 
   onMount(async () => {
-    if (!browser) return;
+    if (!browser) return
 
     // Load Clerk
-    const { Clerk } = await import("@clerk/clerk-js");
-    clerk = new Clerk(
-      import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_your_key",
-    );
+    const { Clerk } = await import('@clerk/clerk-js')
+    clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key')
 
-    await clerk.load();
+    await clerk.load()
 
     if (clerk.user) {
-      goto("/app");
-      return;
+      goto('/app')
+      return
     }
 
-    isLoading = false;
-  });
+    isLoading = false
+  })
 
   async function signInWithGoogle() {
-    if (!clerk) return;
+    if (!clerk) return
     await clerk.openSignIn({
-      redirectUrl: "/app",
+      redirectUrl: '/app',
       appearance: {
         elements: {
-          rootBox: "mx-auto",
-          card: "shadow-none",
+          rootBox: 'mx-auto',
+          card: 'shadow-none',
         },
       },
-    });
+    })
   }
 
   async function signInWithEmail() {
-    if (!clerk) return;
+    if (!clerk) return
     await clerk.openSignIn({
-      redirectUrl: "/app",
-    });
+      redirectUrl: '/app',
+    })
   }
 </script>
 
 <svelte:head>
-  <title>{$_("app.name")} - {$_("app.tagline")}</title>
+  <title>{$_('app.name')} - {$_('app.tagline')}</title>
 </svelte:head>
 
 <div
@@ -56,17 +54,11 @@
 >
   <!-- Decorative elements -->
   <div class="absolute inset-0 overflow-hidden pointer-events-none">
-    <div
-      class="absolute -top-40 -right-40 w-80 h-80 bg-accent/10 rounded-full blur-3xl"
-    />
-    <div
-      class="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"
-    />
+    <div class="absolute -top-40 -right-40 w-80 h-80 bg-accent/10 rounded-full blur-3xl" />
+    <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl" />
   </div>
 
-  <main
-    class="flex-1 flex flex-col items-center justify-center px-6 py-12 relative"
-  >
+  <main class="flex-1 flex flex-col items-center justify-center px-6 py-12 relative">
     {#if isLoading}
       <div class="animate-pulse flex flex-col items-center gap-4">
         <div class="w-20 h-20 bg-surface-200 dark:bg-surface-200 rounded-2xl" />
@@ -80,21 +72,16 @@
         >
           <span class="text-5xl">💪</span>
         </div>
-        <h1
-          class="font-display font-bold text-4xl text-surface-900 dark:text-surface-900 mb-2"
-        >
-          {$_("app.name")}
+        <h1 class="font-display font-bold text-4xl text-surface-900 dark:text-surface-900 mb-2">
+          {$_('app.name')}
         </h1>
         <p class="text-surface-500 dark:text-surface-400 text-lg">
-          {$_("app.tagline")}
+          {$_('app.tagline')}
         </p>
       </div>
 
       <!-- Auth buttons -->
-      <div
-        class="w-full max-w-sm space-y-4 animate-slide-up"
-        style="animation-delay: 0.1s;"
-      >
+      <div class="w-full max-w-sm space-y-4 animate-slide-up" style="animation-delay: 0.1s;">
         <button
           class="w-full btn btn-lg bg-white dark:bg-surface-100 text-surface-900 dark:text-surface-900 border border-surface-200 dark:border-surface-200/50 hover:bg-surface-50 dark:hover:bg-surface-200 shadow-soft"
           on:click={signInWithGoogle}
@@ -117,51 +104,35 @@
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          {$_("auth.continueWith", { values: { provider: "Google" } })}
+          {$_('auth.continueWith', { values: { provider: 'Google' } })}
         </button>
 
         <div class="relative">
           <div class="absolute inset-0 flex items-center">
-            <div
-              class="w-full border-t border-surface-200 dark:border-surface-200/30"
-            />
+            <div class="w-full border-t border-surface-200 dark:border-surface-200/30" />
           </div>
           <div class="relative flex justify-center text-sm">
             <span
               class="px-4 bg-gradient-to-br from-surface-100 via-surface-50 to-indigo-50 dark:from-surface-950 dark:via-surface-950 dark:to-indigo-950/30 text-surface-400"
             >
-              {$_("auth.orEmail")}
+              {$_('auth.orEmail')}
             </span>
           </div>
         </div>
 
-        <button
-          class="w-full btn btn-primary btn-lg"
-          on:click={signInWithEmail}
-        >
-          <svg
-            class="w-5 h-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
+        <button class="w-full btn btn-primary btn-lg" on:click={signInWithEmail}>
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="2" y="4" width="20" height="16" rx="2" />
             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
           </svg>
-          {$_("auth.signIn")}
+          {$_('auth.signIn')}
         </button>
       </div>
 
       <!-- Features preview -->
-      <div
-        class="mt-16 grid grid-cols-3 gap-6 text-center animate-slide-up"
-        style="animation-delay: 0.2s;"
-      >
+      <div class="mt-16 grid grid-cols-3 gap-6 text-center animate-slide-up" style="animation-delay: 0.2s;">
         <div class="space-y-2">
-          <div
-            class="w-12 h-12 mx-auto bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center"
-          >
+          <div class="w-12 h-12 mx-auto bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
             <svg
               class="w-6 h-6 text-green-600 dark:text-green-400"
               viewBox="0 0 24 24"
@@ -173,13 +144,11 @@
             </svg>
           </div>
           <p class="text-xs text-surface-500 dark:text-surface-400 font-medium">
-            {$_("stats.progress")}
+            {$_('stats.progress')}
           </p>
         </div>
         <div class="space-y-2">
-          <div
-            class="w-12 h-12 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"
-          >
+          <div class="w-12 h-12 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
             <svg
               class="w-6 h-6 text-blue-600 dark:text-blue-400"
               viewBox="0 0 24 24"
@@ -194,7 +163,7 @@
             </svg>
           </div>
           <p class="text-xs text-surface-500 dark:text-surface-400 font-medium">
-            {$_("exercises.configure")}
+            {$_('exercises.configure')}
           </p>
         </div>
         <div class="space-y-2">
@@ -214,7 +183,7 @@
             </svg>
           </div>
           <p class="text-xs text-surface-500 dark:text-surface-400 font-medium">
-            {$_("stats.title")}
+            {$_('stats.title')}
           </p>
         </div>
       </div>
@@ -222,9 +191,7 @@
   </main>
 
   <!-- Footer -->
-  <footer
-    class="py-6 text-center text-xs text-surface-400 dark:text-surface-500 relative"
-  >
+  <footer class="py-6 text-center text-xs text-surface-400 dark:text-surface-500 relative">
     <p>FlexFit &copy; {new Date().getFullYear()}</p>
   </footer>
 </div>

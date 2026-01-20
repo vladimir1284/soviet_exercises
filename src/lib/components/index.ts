@@ -1,7 +1,7 @@
-export { default as BottomNav } from './BottomNav.svelte';
-export { default as ProgressRing } from './ProgressRing.svelte';
-export { default as ExerciseCard } from './ExerciseCard.svelte';
-export { default as Toast } from './Toast.svelte';
-export { default as Modal } from './Modal.svelte';
-export { default as EmojiPicker } from './EmojiPicker.svelte';
-export { default as ColorPicker } from './ColorPicker.svelte';
+export { default as BottomNav } from './BottomNav.svelte'
+export { default as ProgressRing } from './ProgressRing.svelte'
+export { default as ExerciseCard } from './ExerciseCard.svelte'
+export { default as Toast } from './Toast.svelte'
+export { default as Modal } from './Modal.svelte'
+export { default as EmojiPicker } from './EmojiPicker.svelte'
+export { default as ColorPicker } from './ColorPicker.svelte'

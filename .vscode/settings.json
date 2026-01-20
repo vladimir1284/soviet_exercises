@@ -1,5 +1,7 @@
 {
-    "i18n-ally.localesPaths": [
-        "src/lib/i18n"
-    ]
+  "i18n-ally.localesPaths": ["src/lib/i18n"],
+  "[svelte]": {
+    "editor.defaultFormatter": "svelte.svelte-vscode"
+  },
+  "editor.formatOnSave": true
 }

@@ -1,27 +1,27 @@
 <script lang="ts">
-  import '../app.css';
-  import { waitLocale } from '$lib/i18n';
-  import { Toast } from '$components';
-  import { browser } from '$app/environment';
-  import { onMount } from 'svelte';
-  
-  let i18nReady = false;
-  
+  import '../app.css'
+  import { waitLocale } from '$lib/i18n'
+  import { Toast } from '$components'
+  import { browser } from '$app/environment'
+  import { onMount } from 'svelte'
+
+  let i18nReady = false
+
   // Wait for locale to load
   waitLocale().then(() => {
-    i18nReady = true;
-  });
-  
+    i18nReady = true
+  })
+
   // Register service worker for PWA
   onMount(async () => {
     if (browser && 'serviceWorker' in navigator) {
       try {
-        await navigator.serviceWorker.register('/sw.js');
+        await navigator.serviceWorker.register('/sw.js')
       } catch (e) {
-        console.log('Service worker registration failed:', e);
+        console.log('Service worker registration failed:', e)
       }
     }
-  });
+  })
 </script>
 
 {#if i18nReady}

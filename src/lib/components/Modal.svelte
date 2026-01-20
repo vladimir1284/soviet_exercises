@@ -1,21 +1,21 @@
 <script lang="ts">
-  import { _ } from 'svelte-i18n';
-  import { createEventDispatcher } from 'svelte';
-  import { fade, fly } from 'svelte/transition';
-  
-  export let open: boolean = false;
-  export let title: string = '';
-  export let showClose: boolean = true;
-  
-  const dispatch = createEventDispatcher();
-  
+  import { _ } from 'svelte-i18n'
+  import { createEventDispatcher } from 'svelte'
+  import { fade, fly } from 'svelte/transition'
+
+  export let open: boolean = false
+  export let title: string = ''
+  export let showClose: boolean = true
+
+  const dispatch = createEventDispatcher()
+
   function close() {
-    dispatch('close');
+    dispatch('close')
   }
-  
+
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === 'Escape' && open) {
-      close();
+      close()
     }
   }
 </script>
@@ -24,20 +24,20 @@
 
 {#if open}
   <!-- Backdrop -->
-  <div 
+  <div
     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
     transition:fade={{ duration: 200 }}
     on:click={close}
-    on:keydown={(e) => e.key === 'Enter' && close()}
+    on:keydown={e => e.key === 'Enter' && close()}
     role="button"
     tabindex="-1"
     aria-label="Close modal"
   />
-  
+
   <!-- Modal -->
-  <div 
-    class="fixed inset-x-4 bottom-20 md:bottom-auto md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 
-           bg-white dark:bg-surface-100 rounded-2xl md:rounded-2xl shadow-soft-lg z-50 
+  <div
+    class="fixed inset-x-4 bottom-20 md:bottom-auto md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2
+           bg-white dark:bg-surface-100 rounded-2xl md:rounded-2xl shadow-soft-lg z-50
            max-h-[70vh] md:max-h-[80vh] md:w-full md:max-w-md overflow-hidden"
     transition:fly={{ y: 100, duration: 300 }}
     role="dialog"
@@ -50,27 +50,25 @@
         {title}
       </h2>
       {#if showClose}
-        <button 
-          class="btn btn-ghost btn-icon -mr-2"
-          on:click={close}
-          aria-label={$_('common.cancel')}
-        >
+        <button class="btn btn-ghost btn-icon -mr-2" on:click={close} aria-label={$_('common.cancel')}>
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
       {/if}
     </div>
-    
+
     <!-- Content -->
     <div class="p-5 overflow-y-auto max-h-[45vh] md:max-h-[55vh]">
       <slot />
     </div>
-    
+
     <!-- Footer -->
     {#if $$slots.footer}
-      <div class="px-5 py-4 border-t border-surface-200/50 dark:border-surface-200/20 bg-surface-50 dark:bg-surface-100/50">
+      <div
+        class="px-5 py-4 border-t border-surface-200/50 dark:border-surface-200/20 bg-surface-50 dark:bg-surface-100/50"
+      >
         <slot name="footer" />
       </div>
     {/if}
