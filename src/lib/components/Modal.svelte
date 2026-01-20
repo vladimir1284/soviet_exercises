@@ -36,21 +36,16 @@
   
   <!-- Modal -->
   <div 
-    class="fixed inset-x-4 bottom-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 
-           bg-white dark:bg-surface-100 rounded-t-3xl md:rounded-2xl shadow-soft-lg z-50 
-           max-h-[85vh] md:max-h-[80vh] md:w-full md:max-w-md overflow-hidden safe-bottom"
+    class="fixed inset-x-4 bottom-20 md:bottom-auto md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 
+           bg-white dark:bg-surface-100 rounded-2xl md:rounded-2xl shadow-soft-lg z-50 
+           max-h-[70vh] md:max-h-[80vh] md:w-full md:max-w-md overflow-hidden"
     transition:fly={{ y: 100, duration: 300 }}
     role="dialog"
     aria-modal="true"
     aria-labelledby="modal-title"
   >
-    <!-- Handle for mobile -->
-    <div class="md:hidden flex justify-center py-3">
-      <div class="w-10 h-1 bg-surface-300 dark:bg-surface-300 rounded-full" />
-    </div>
-    
     <!-- Header -->
-    <div class="flex items-center justify-between px-6 pb-4 md:pt-6 border-b border-surface-200/50 dark:border-surface-200/20">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-surface-200/50 dark:border-surface-200/20">
       <h2 id="modal-title" class="font-display font-semibold text-xl text-surface-900 dark:text-surface-900">
         {title}
       </h2>
@@ -69,13 +64,13 @@
     </div>
     
     <!-- Content -->
-    <div class="p-6 overflow-y-auto max-h-[60vh]">
+    <div class="p-5 overflow-y-auto max-h-[45vh] md:max-h-[55vh]">
       <slot />
     </div>
     
     <!-- Footer -->
     {#if $$slots.footer}
-      <div class="px-6 py-4 border-t border-surface-200/50 dark:border-surface-200/20 bg-surface-50 dark:bg-surface-100/50">
+      <div class="px-5 py-4 border-t border-surface-200/50 dark:border-surface-200/20 bg-surface-50 dark:bg-surface-100/50">
         <slot name="footer" />
       </div>
     {/if}
