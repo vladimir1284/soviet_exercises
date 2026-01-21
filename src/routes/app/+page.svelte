@@ -211,11 +211,12 @@
     {:else}
       <div class="space-y-3">
         {#each $exercises.filter(e => e.isActive) as exercise (exercise.id)}
+          {@const cycle = $cycles.find(c => c.exerciseId === exercise.id && c.isActive)}
           <ExerciseCard
             {exercise}
-            cycle={getActiveCycle(exercise.id)}
-            completedSets={getCompletedSets(exercise.id)}
-            needsRecalibration={checkNeedsRecalibration(exercise.id)}
+            {cycle}
+            completedSets={$todayProgress[exercise.id]?.completed || 0}
+            needsRecalibration={cycle ? needsRecalibration(cycle) : false}
             onLog={() => handleQuickLog(exercise)}
             onConfigure={() => handleConfigure(exercise)}
           />
