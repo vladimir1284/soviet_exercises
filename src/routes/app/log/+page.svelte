@@ -29,7 +29,11 @@
   $: selectedCycle = selectedExerciseId ? $cycles.find(c => c.exerciseId === selectedExerciseId && c.isActive) : null
 
   // Get today's sets for selected exercise
-  $: exerciseSets = selectedCycle ? $todaySets.filter(s => s.cycleId === selectedCycle.id) : []
+  $: exerciseSets = selectedCycle
+    ? $todaySets
+        .filter(s => s.cycleId === selectedCycle.id)
+        .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
+    : []
 
   // Progress
   $: completedSets = exerciseSets.length
