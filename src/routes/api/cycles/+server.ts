@@ -25,7 +25,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
     }
 
     // Create new cycle
-    const today = new Date().toISOString().split('T')[0]
+    const today = new Date().toISOString()
     const cycle = await queries.createCycle(db, {
       exerciseId,
       maxReps,

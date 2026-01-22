@@ -78,8 +78,10 @@
   async function saveEdit() {
     if (!editingSet) return
 
-    const today = new Date().toISOString().split('T')[0]
-    const completedAt = `${today}T${editTime}:00`
+    const date = new Date(editingSet.completedAt)
+    const [hours, minutes] = editTime.split(':')
+    date.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+    const completedAt = date.toISOString()
 
     try {
       const response = await fetch(`/api/sets/${editingSet.id}`, {

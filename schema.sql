@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT,
   locale TEXT DEFAULT 'es',
   theme TEXT DEFAULT 'system',
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at DATETIME DEFAULT (STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  updated_at DATETIME DEFAULT (STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
 -- Exercises configured by user
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS exercises (
   color TEXT DEFAULT '#6366f1',
   is_active INTEGER DEFAULT 1,
   sort_order INTEGER DEFAULT 0,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_at DATETIME DEFAULT (STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now')),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS cycles (
   end_date DATE,
   is_active INTEGER DEFAULT 1,
   notes TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_at DATETIME DEFAULT (STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now')),
   FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
 );
 
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS sets (
   day_number INTEGER,
   set_number INTEGER,
   notes TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_at DATETIME DEFAULT (STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now')),
   FOREIGN KEY (cycle_id) REFERENCES cycles(id) ON DELETE CASCADE
 );
 
@@ -68,8 +68,8 @@ CREATE TABLE IF NOT EXISTS user_settings (
   rest_days TEXT DEFAULT '[]',
   notification_enabled INTEGER DEFAULT 1,
   notification_time TEXT DEFAULT '09:00',
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  created_at DATETIME DEFAULT (STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  updated_at DATETIME DEFAULT (STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now')),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -84,11 +84,11 @@ CREATE INDEX IF NOT EXISTS idx_sets_completed ON sets(completed_at);
 CREATE TRIGGER IF NOT EXISTS update_users_timestamp 
 AFTER UPDATE ON users
 BEGIN
-  UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+  UPDATE users SET updated_at = STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = NEW.id;
 END;
 
 CREATE TRIGGER IF NOT EXISTS update_settings_timestamp 
 AFTER UPDATE ON user_settings
 BEGIN
-  UPDATE user_settings SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+  UPDATE user_settings SET updated_at = STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = NEW.id;
 END;

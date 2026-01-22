@@ -169,7 +169,10 @@ export const queries = {
       .first<DbCycle>(),
 
   deactivateCycle: (db: D1Database, id: number) =>
-    db.prepare('UPDATE cycles SET is_active = 0, end_date = DATE() WHERE id = ? RETURNING *').bind(id).first<DbCycle>(),
+    db
+      .prepare("UPDATE cycles SET is_active = 0, end_date = STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ? RETURNING *")
+      .bind(id)
+      .first<DbCycle>(),
 
   // Sets
   getSetsByCycle: (db: D1Database, cycleId: number) =>
@@ -223,7 +226,7 @@ export const queries = {
     db
       .prepare(
         `
-      UPDATE sets SET completed_at = COALESCE(?, completed_at), notes = COALESCE(?, notes), edited_at = DATETIME()
+      UPDATE sets SET completed_at = COALESCE(?, completed_at), notes = COALESCE(?, notes), edited_at = STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now')
       WHERE id = ? RETURNING *
     `,
       )
