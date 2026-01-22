@@ -6,13 +6,16 @@
   export let exercise: Exercise
   export let cycle: Cycle | undefined = undefined
   export let completedSets: number = 0
+  export let pendingSets: number = 0
   export let needsRecalibration: boolean = false
   export let onLog: (() => void) | undefined = undefined
   export let onConfigure: (() => void) | undefined = undefined
 
   $: totalSets = cycle?.setsPerDay ?? 0
-  $: progress = totalSets > 0 ? (completedSets / totalSets) * 100 : 0
-  $: isComplete = completedSets >= totalSets && totalSets > 0
+  $: totalCompleted = completedSets + pendingSets
+  $: progress = totalSets > 0 ? (totalCompleted / totalSets) * 100 : 0
+  $: isComplete = totalCompleted >= totalSets && totalSets > 0
+  $: isSyncing = pendingSets > 0
 </script>
 
 <article class="card-interactive p-4 animate-fade-in" style="--accent-color: {exercise.color};">
@@ -21,7 +24,24 @@
     <div class="relative">
       {#if cycle}
         <ProgressRing {progress} size={72} strokeWidth={6} color={exercise.color}>
-          <span class="text-2xl">{exercise.icon}</span>
+          <div class="relative flex items-center justify-center">
+            <span class="text-2xl">{exercise.icon}</span>
+            {#if isSyncing}
+              <div
+                class="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full flex items-center justify-center animate-pulse shadow-sm"
+              >
+                <svg
+                  class="w-2.5 h-2.5 text-white"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                >
+                  <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" />
+                </svg>
+              </div>
+            {/if}
+          </div>
         </ProgressRing>
       {:else}
         <div
@@ -49,8 +69,15 @@
           <span class="text-sm font-medium">{$_('home.recalibrate')}</span>
         </div>
       {:else if cycle}
-        <p class="mt-1 text-sm text-surface-500 dark:text-surface-400">
-          {$_('home.setsCompleted', { values: { count: completedSets, total: totalSets } })}
+        <p class="mt-1 text-sm text-surface-500 dark:text-surface-400 flex items-center gap-2">
+          {$_('home.setsCompleted', { values: { count: totalCompleted, total: totalSets } })}
+          {#if isSyncing}
+            <span
+              class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent/10 text-[10px] font-bold text-accent uppercase tracking-wider animate-pulse"
+            >
+              {$_('common.syncing') || 'Syncing'}
+            </span>
+          {/if}
         </p>
         <p class="text-xs text-surface-400 dark:text-surface-500">
           {cycle.repsPerSet}

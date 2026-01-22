@@ -2,7 +2,18 @@
   import { _ } from 'svelte-i18n'
   import { goto } from '$app/navigation'
   import { ExerciseCard, Modal, EmojiPicker, ColorPicker } from '$components'
-  import { user, exercises, cycles, todaySets, todayProgress, settings, toasts, needsRecalibration } from '$stores'
+  import {
+    user,
+    exercises,
+    cycles,
+    todaySets,
+    todayProgress,
+    settings,
+    toasts,
+    needsRecalibration,
+    isOnline,
+    pendingSets,
+  } from '$stores'
   import type { Exercise, Cycle } from '$stores'
 
   // Modal state
@@ -35,24 +46,83 @@
     const cycle = getActiveCycle(exercise.id)
     if (!cycle) return
 
+    const setData = {
+      cycleId: cycle.id,
+      repsCompleted: cycle.repsPerSet,
+      completedAt: new Date().toISOString(),
+    }
+
+    if (!$isOnline) {
+      pendingSets.add(setData)
+      toasts.add({ message: $_('log.offlineLogged'), type: 'info' })
+      return
+    }
+
     try {
       const response = await fetch('/api/sets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cycleId: cycle.id,
-          repsCompleted: cycle.repsPerSet,
-        }),
+        body: JSON.stringify(setData),
       })
 
       if (response.ok) {
         const newSet = await response.json()
         todaySets.update(sets => [newSet, ...sets])
         toasts.add({ message: $_('log.logged'), type: 'success' })
+      } else {
+        throw new Error('Failed to log set')
       }
     } catch (e) {
-      toasts.add({ message: $_('common.error'), type: 'error' })
+      // If fetch fails (e.g. network error not caught by isOnline), add to pending
+      pendingSets.add(setData)
+      toasts.add({ message: $_('log.offlineLogged'), type: 'info' })
     }
+  }
+
+  // Sync pending sets
+  async function syncPending() {
+    if (!$isOnline || $pendingSets.length === 0) return
+
+    const setsToSync = [...$pendingSets]
+    // Clear pending sets immediately to avoid duplicate syncs
+    pendingSets.clear()
+
+    let successCount = 0
+    let failCount = 0
+
+    for (const setData of setsToSync) {
+      try {
+        const response = await fetch('/api/sets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(setData),
+        })
+
+        if (response.ok) {
+          const newSet = await response.json()
+          todaySets.update(sets => [newSet, ...sets])
+          successCount++
+        } else {
+          failCount++
+          pendingSets.add(setData) // Add back if failed
+        }
+      } catch (e) {
+        failCount++
+        pendingSets.add(setData) // Add back if failed
+      }
+    }
+
+    if (successCount > 0) {
+      toasts.add({
+        message: $_('log.synced', { values: { count: successCount } }),
+        type: 'success',
+      })
+    }
+  }
+
+  // Watch for online status to sync
+  $: if ($isOnline && $pendingSets.length > 0) {
+    syncPending()
   }
 
   // Handle configure cycle
@@ -125,7 +195,7 @@
 
   // Calculate overall progress
   $: totalSets = Object.values($todayProgress).reduce((sum, p) => sum + p.total, 0)
-  $: completedSets = Object.values($todayProgress).reduce((sum, p) => sum + p.completed, 0)
+  $: completedSets = Object.values($todayProgress).reduce((sum, p) => sum + p.completed + p.pending, 0)
   $: overallProgress = totalSets > 0 ? (completedSets / totalSets) * 100 : 0
 </script>
 
@@ -216,6 +286,7 @@
             {exercise}
             {cycle}
             completedSets={$todayProgress[exercise.id]?.completed || 0}
+            pendingSets={$todayProgress[exercise.id]?.pending || 0}
             needsRecalibration={cycle ? needsRecalibration(cycle) : false}
             onLog={() => handleQuickLog(exercise)}
             onConfigure={() => handleConfigure(exercise)}

@@ -65,7 +65,9 @@
     "undo": "Deshacer",
     "todaySets": "Tandas de hoy",
     "noSets": "Aún no has registrado tandas hoy",
-    "allDone": "¡Completaste todas las tandas de hoy! 🎉"
+    "allDone": "¡Completaste todas las tandas de hoy! 🎉",
+    "offlineLogged": "Tanda guardada (offline)",
+    "synced": "{count} tandas sincronizadas"
   },
   "stats": {
     "title": "Estadísticas",
@@ -116,7 +118,8 @@
     "today": "Hoy",
     "yesterday": "Ayer",
     "week": "Semana",
-    "month": "Mes"
+    "month": "Mes",
+    "syncing": "Sincronizando"
   },
   "notifications": {
     "recalibrateTitle": "¡Hora de recalibrar!",

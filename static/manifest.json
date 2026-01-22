@@ -2,7 +2,7 @@
   "name": "FlexFit",
   "short_name": "FlexFit",
   "description": "Track your exercise progress with personalized training cycles",
-  "start_url": "/app",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#18181b",
   "theme_color": "#6366f1",
@@ -13,52 +13,56 @@
       "src": "/icons/icon-72.png",
       "sizes": "72x72",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-96.png",
       "sizes": "96x96",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-128.png",
       "sizes": "128x128",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-144.png",
       "sizes": "144x144",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-152.png",
       "sizes": "152x152",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-384.png",
       "sizes": "384x384",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any maskable"
     }
   ],
-  "categories": ["fitness", "health", "lifestyle"],
+  "categories": [
+    "fitness",
+    "health",
+    "lifestyle"
+  ],
   "screenshots": [],
   "shortcuts": [
     {
@@ -66,14 +70,24 @@
       "short_name": "Log",
       "description": "Quickly log a set",
       "url": "/app/log",
-      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "View Stats",
       "short_name": "Stats",
       "description": "View your statistics",
       "url": "/app/stats",
-      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
     }
   ]
 }

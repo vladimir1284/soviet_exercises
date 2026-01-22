@@ -45,6 +45,7 @@ export interface SetLog {
   dayNumber?: number
   setNumber?: number
   notes?: string
+  isPending?: boolean
 }
 
 export interface UserSettings {
@@ -137,6 +138,57 @@ export const settings = writable<UserSettings>({
   notificationTime: '09:00',
 })
 
+// Offline support stores
+export const isOnline = writable(browser ? navigator.onLine : true)
+
+if (browser) {
+  window.addEventListener('online', () => isOnline.set(true))
+  window.addEventListener('offline', () => isOnline.set(false))
+}
+
+function createPendingSetsStore() {
+  const stored = browser ? localStorage.getItem('pendingSets') : null
+  const initialValue: Omit<SetLog, 'id'>[] = stored ? JSON.parse(stored) : []
+  const { subscribe, set, update } = writable<Omit<SetLog, 'id'>[]>(initialValue)
+
+  return {
+    subscribe,
+    add: (setLog: Omit<SetLog, 'id'>) => {
+      update(sets => {
+        const newSets = [...sets, setLog]
+        if (browser) localStorage.setItem('pendingSets', JSON.stringify(newSets))
+        return newSets
+      })
+    },
+    clear: () => {
+      set([])
+      if (browser) localStorage.removeItem('pendingSets')
+    },
+    remove: (index: number) => {
+      update(sets => {
+        const newSets = sets.filter((_, i) => i !== index)
+        if (browser) localStorage.setItem('pendingSets', JSON.stringify(newSets))
+        return newSets
+      })
+    },
+  }
+}
+
+export const pendingSets = createPendingSetsStore()
+
+// Combined sets for today (synced + pending)
+export const allTodaySets = derived([todaySets, pendingSets], ([$todaySets, $pendingSets]) => {
+  // Convert pending sets to SetLog-like objects (without IDs)
+  const pending = $pendingSets.map((s, i) => ({
+    ...s,
+    id: -(i + 1), // Negative IDs for pending sets
+    isPending: true,
+  }))
+  return [...pending, ...$todaySets].sort(
+    (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime(),
+  )
+})
+
 // Derived stores
 export const activeExercises = derived(exercises, $exercises =>
   $exercises.filter(e => e.isActive).sort((a, b) => a.sortOrder - b.sortOrder),
@@ -156,19 +208,24 @@ export function needsRecalibration(cycle: Cycle): boolean {
 }
 
 // Calculate progress for today
-export const todayProgress = derived([todaySets, activeCycles], ([$todaySets, $activeCycles]) => {
-  const progress: Record<number, { completed: number; total: number }> = {}
+export const todayProgress = derived(
+  [todaySets, pendingSets, activeCycles],
+  ([$todaySets, $pendingSets, $activeCycles]) => {
+    const progress: Record<number, { completed: number; pending: number; total: number }> = {}
 
-  $activeCycles.forEach(cycle => {
-    const setsForCycle = $todaySets.filter(s => s.cycleId === cycle.id)
-    progress[cycle.exerciseId] = {
-      completed: setsForCycle.length,
-      total: cycle.setsPerDay,
-    }
-  })
+    $activeCycles.forEach(cycle => {
+      const setsForCycle = $todaySets.filter(s => s.cycleId === cycle.id)
+      const pendingForCycle = $pendingSets.filter(s => s.cycleId === cycle.id)
+      progress[cycle.exerciseId] = {
+        completed: setsForCycle.length,
+        pending: pendingForCycle.length,
+        total: cycle.setsPerDay,
+      }
+    })
 
-  return progress
-})
+    return progress
+  },
+)
 
 // Loading state
 export const isLoading = writable(true)

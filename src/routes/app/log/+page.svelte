@@ -1,7 +1,7 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
   import { ProgressRing, Modal } from '$components'
-  import { exercises, cycles, todaySets, todayProgress, toasts } from '$stores'
+  import { exercises, cycles, todaySets, todayProgress, toasts, isOnline, pendingSets, allTodaySets } from '$stores'
   import type { Exercise, Cycle, SetLog } from '$stores'
   import { getLocalISOString } from '$lib/utils/date'
 
@@ -29,42 +29,94 @@
   $: selectedExercise = $exercises.find(e => e.id === selectedExerciseId)
   $: selectedCycle = selectedExerciseId ? $cycles.find(c => c.exerciseId === selectedExerciseId && c.isActive) : null
 
-  // Get today's sets for selected exercise
-  $: exerciseSets = selectedCycle
-    ? $todaySets
-        .filter(s => s.cycleId === selectedCycle.id)
-        .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
-    : []
+  // Get today's sets for selected exercise (including pending)
+  $: exerciseSets = selectedCycle ? $allTodaySets.filter(s => s.cycleId === selectedCycle.id) : []
 
   // Progress
-  $: completedSets = exerciseSets.length
+  $: pendingCount = selectedCycle ? $pendingSets.filter(s => s.cycleId === selectedCycle.id).length : 0
+  $: totalCompleted = exerciseSets.length + pendingCount
   $: totalSets = selectedCycle?.setsPerDay ?? 0
-  $: progress = totalSets > 0 ? (completedSets / totalSets) * 100 : 0
-  $: isComplete = completedSets >= totalSets
-  $: nextSetNumber = completedSets + 1
+  $: progress = totalSets > 0 ? (totalCompleted / totalSets) * 100 : 0
+  $: isComplete = totalCompleted >= totalSets
+  $: nextSetNumber = totalCompleted + 1
+  $: isSyncing = pendingCount > 0
 
   // Log a set
   async function logSet() {
     if (!selectedCycle || isComplete) return
 
+    const setData = {
+      cycleId: selectedCycle.id,
+      repsCompleted: selectedCycle.repsPerSet,
+      completedAt: new Date().toISOString(),
+    }
+
+    if (!$isOnline) {
+      pendingSets.add(setData)
+      toasts.add({ message: $_('log.offlineLogged'), type: 'info' })
+      return
+    }
+
     try {
       const response = await fetch('/api/sets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cycleId: selectedCycle.id,
-          repsCompleted: selectedCycle.repsPerSet,
-        }),
+        body: JSON.stringify(setData),
       })
 
       if (response.ok) {
         const newSet = await response.json()
         todaySets.update(sets => [newSet, ...sets])
         toasts.add({ message: $_('log.logged'), type: 'success' })
+      } else {
+        throw new Error('Failed to log set')
       }
     } catch (e) {
-      toasts.add({ message: $_('common.error'), type: 'error' })
+      pendingSets.add(setData)
+      toasts.add({ message: $_('log.offlineLogged'), type: 'info' })
     }
+  }
+
+  // Sync pending sets
+  async function syncPending() {
+    if (!$isOnline || $pendingSets.length === 0) return
+
+    const setsToSync = [...$pendingSets]
+    pendingSets.clear()
+
+    let successCount = 0
+
+    for (const setData of setsToSync) {
+      try {
+        const response = await fetch('/api/sets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(setData),
+        })
+
+        if (response.ok) {
+          const newSet = await response.json()
+          todaySets.update(sets => [newSet, ...sets])
+          successCount++
+        } else {
+          pendingSets.add(setData)
+        }
+      } catch (e) {
+        pendingSets.add(setData)
+      }
+    }
+
+    if (successCount > 0) {
+      toasts.add({
+        message: $_('log.synced', { values: { count: successCount } }),
+        type: 'success',
+      })
+    }
+  }
+
+  // Watch for online status to sync
+  $: if ($isOnline && $pendingSets.length > 0) {
+    syncPending()
   }
 
   // Open edit modal
@@ -175,7 +227,7 @@
                 {exercise.name}
               </p>
               <p class="text-xs text-surface-500 dark:text-surface-400">
-                {prog?.completed ?? 0}/{cycle?.setsPerDay ?? 0}
+                {(prog?.completed ?? 0) + (prog?.pending ?? 0)}/{cycle?.setsPerDay ?? 0}
               </p>
             </div>
           </div>
@@ -202,14 +254,26 @@
                   <polyline points="16 10 11 15 8 12" />
                 </svg>
               {:else}
-                <span
-                  class="num-display text-5xl text-surface-900 dark:text-surface-900 group-hover:scale-110 transition-transform"
-                >
-                  {selectedCycle.repsPerSet}
-                </span>
-                <span class="text-sm text-surface-500 dark:text-surface-400">
-                  {$_('log.reps')}
-                </span>
+                <div class="relative flex flex-col items-center">
+                  <span
+                    class="num-display text-5xl text-surface-900 dark:text-surface-900 group-hover:scale-110 transition-transform"
+                  >
+                    {selectedCycle.repsPerSet}
+                  </span>
+                  <span class="text-sm text-surface-500 dark:text-surface-400">
+                    {$_('log.reps')}
+                  </span>
+                  {#if isSyncing}
+                    <div
+                      class="absolute -top-8 flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 text-[10px] font-bold text-accent uppercase tracking-wider animate-pulse"
+                    >
+                      <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" />
+                      </svg>
+                      {$_('common.syncing')}
+                    </div>
+                  {/if}
+                </div>
               {/if}
             </div>
           </ProgressRing>
@@ -233,7 +297,7 @@
               {$_('log.setNumber', { values: { number: nextSetNumber } })} / {totalSets}
             </p>
             <p class="text-sm text-surface-400 dark:text-surface-500 mt-1">
-              {$_('home.setsCompleted', { values: { count: completedSets, total: totalSets } })}
+              {$_('home.setsCompleted', { values: { count: totalCompleted, total: totalSets } })}
             </p>
           {/if}
         </div>
@@ -245,7 +309,12 @@
           <h2 class="section-header">{$_('log.todaySets')}</h2>
           <div class="space-y-2">
             {#each exerciseSets as set, i (set.id)}
-              <button class="w-full card p-4 text-left hover:shadow-soft transition-all" on:click={() => openEdit(set)}>
+              {@const isPending = set.isPending}
+              <button
+                class="w-full card p-4 text-left hover:shadow-soft transition-all {isPending ? 'opacity-80' : ''}"
+                on:click={() => !isPending && openEdit(set)}
+                disabled={isPending}
+              >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
                     <span
@@ -255,9 +324,16 @@
                       {exerciseSets.length - i}
                     </span>
                     <div>
-                      <p class="font-medium text-surface-900 dark:text-surface-900">
+                      <p class="font-medium text-surface-900 dark:text-surface-900 flex items-center gap-2">
                         {set.repsCompleted}
                         {$_('log.reps')}
+                        {#if isPending}
+                          <span
+                            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-accent/10 text-[10px] font-bold text-accent uppercase tracking-wider animate-pulse"
+                          >
+                            {$_('common.syncing')}
+                          </span>
+                        {/if}
                       </p>
                       {#if set.notes}
                         <p class="text-xs text-surface-500 dark:text-surface-400 truncate max-w-[200px]">
@@ -270,7 +346,7 @@
                     <p class="text-sm text-surface-500 dark:text-surface-400">
                       {formatTime(set.completedAt)}
                     </p>
-                    {#if set.editedAt}
+                    {#if !isPending && set.editedAt}
                       <p class="text-xs text-surface-400 dark:text-surface-500">
                         ({$_('common.edit')})
                       </p>

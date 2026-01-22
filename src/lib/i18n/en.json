@@ -65,7 +65,9 @@
     "undo": "Undo",
     "todaySets": "Today's sets",
     "noSets": "No sets logged today yet",
-    "allDone": "You completed all sets for today! 🎉"
+    "allDone": "You completed all sets for today! 🎉",
+    "offlineLogged": "Set saved (offline)",
+    "synced": "{count} sets synced"
   },
   "stats": {
     "title": "Stats",
@@ -116,7 +118,8 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "week": "Week",
-    "month": "Month"
+    "month": "Month",
+    "syncing": "Syncing"
   },
   "notifications": {
     "recalibrateTitle": "Time to recalibrate!",
