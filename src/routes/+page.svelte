@@ -3,6 +3,7 @@
   import { onMount } from 'svelte'
   import { browser } from '$app/environment'
   import { goto } from '$app/navigation'
+  import { user, isOnline } from '$stores'
 
   let clerk: any = null
   let isLoading = true
@@ -10,15 +11,30 @@
   onMount(async () => {
     if (!browser) return
 
-    // Load Clerk
-    const { Clerk } = await import('@clerk/clerk-js')
-    clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key')
-
-    await clerk.load()
-
-    if (clerk.user) {
+    // If offline and we have a cached user, go to app
+    if (!$isOnline && $user) {
       goto('/app')
       return
+    }
+
+    try {
+      // Load Clerk
+      const { Clerk } = await import('@clerk/clerk-js')
+      clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key')
+
+      await clerk.load()
+
+      if (clerk.user) {
+        goto('/app')
+        return
+      }
+    } catch (e) {
+      console.error('Clerk load failed:', e)
+      // If clerk fails (likely offline) but we have a cached user, go to app
+      if ($user) {
+        goto('/app')
+        return
+      }
     }
 
     isLoading = false

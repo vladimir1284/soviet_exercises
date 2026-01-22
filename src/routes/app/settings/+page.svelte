@@ -1,7 +1,7 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
   import { locale, locales, localeNames } from '$lib/i18n'
-  import { user, theme, settings, toasts } from '$stores'
+  import { user, theme, settings, toasts, clearAllData } from '$stores'
   import { browser } from '$app/environment'
   import { goto } from '$app/navigation'
 
@@ -45,7 +45,7 @@
     await clerk.load()
     await clerk.signOut()
 
-    user.signOut()
+    clearAllData()
     goto('/')
   }
 

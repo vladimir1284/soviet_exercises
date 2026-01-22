@@ -12,34 +12,53 @@
   onMount(async () => {
     if (!browser) return
 
-    // Load Clerk
-    const { Clerk } = await import('@clerk/clerk-js')
-    clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key')
+    try {
+      // Load Clerk
+      const { Clerk } = await import('@clerk/clerk-js')
+      clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key')
 
-    await clerk.load()
+      await clerk.load()
 
-    if (!clerk.user) {
-      goto('/')
-      return
+      if (!clerk.user) {
+        // If no clerk user but we have a cached user, we might be offline
+        if ($user) {
+          console.log('Using cached user data (offline)')
+          isLoading.set(false)
+          return
+        }
+        goto('/')
+        return
+      }
+
+      // Set user data from Clerk
+      user.set({
+        id: $user?.id || 0,
+        clerkId: clerk.user.id,
+        email: clerk.user.primaryEmailAddress?.emailAddress || '',
+        name: clerk.user.firstName || clerk.user.username || 'User',
+        locale: 'es',
+        theme: 'system',
+      })
+
+      // Load user data from API
+      await loadUserData()
+    } catch (e) {
+      console.error('App initialization failed:', e)
+      // If initialization fails (likely offline) but we have a cached user, continue
+      if ($user) {
+        console.log('App initialization failed, using cached data')
+      } else {
+        goto('/')
+        return
+      }
     }
-
-    // Set user data
-    user.set({
-      id: 0,
-      clerkId: clerk.user.id,
-      email: clerk.user.primaryEmailAddress?.emailAddress || '',
-      name: clerk.user.firstName || clerk.user.username || 'User',
-      locale: 'es',
-      theme: 'system',
-    })
-
-    // Load user data from API
-    await loadUserData()
 
     isLoading.set(false)
   })
 
   async function loadUserData() {
+    if (!clerk?.user) return
+
     try {
       const response = await fetch('/api/user/init', {
         method: 'POST',
@@ -63,7 +82,8 @@
         }
       }
     } catch (e) {
-      console.error('Failed to load user data:', e)
+      console.error('Failed to load user data from API (offline?):', e)
+      // We already have cached data in stores from initialization
     }
   }
 </script>

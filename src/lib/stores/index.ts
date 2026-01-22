@@ -57,19 +57,46 @@ export interface UserSettings {
   notificationTime: string
 }
 
-// User store
-function createUserStore() {
-  const { subscribe, set, update } = writable<User | null>(null)
+// Helper for persisted stores
+function createPersistedStore<T>(key: string, initialValue: T) {
+  const stored = browser ? localStorage.getItem(key) : null
+  const data = stored ? JSON.parse(stored) : initialValue
+  const { subscribe, set, update } = writable<T>(data)
 
   return {
     subscribe,
-    set,
-    update,
-    signOut: () => set(null),
+    set: (value: T) => {
+      if (browser) {
+        if (value === null || value === undefined) {
+          localStorage.removeItem(key)
+        } else {
+          localStorage.setItem(key, JSON.stringify(value))
+        }
+      }
+      set(value)
+    },
+    update: (fn: (value: T) => T) => {
+      update(current => {
+        const newValue = fn(current)
+        if (browser) {
+          if (newValue === null || newValue === undefined) {
+            localStorage.removeItem(key)
+          } else {
+            localStorage.setItem(key, JSON.stringify(newValue))
+          }
+        }
+        return newValue
+      })
+    },
+    reset: () => {
+      if (browser) localStorage.removeItem(key)
+      set(initialValue)
+    },
   }
 }
 
-export const user = createUserStore()
+// User store
+export const user = createPersistedStore<User | null>('user', null)
 
 // Theme store
 type Theme = 'system' | 'light' | 'dark'
@@ -120,16 +147,16 @@ if (browser) {
 }
 
 // Exercises store
-export const exercises = writable<Exercise[]>([])
+export const exercises = createPersistedStore<Exercise[]>('exercises', [])
 
 // Active cycles store
-export const cycles = writable<Cycle[]>([])
+export const cycles = createPersistedStore<Cycle[]>('cycles', [])
 
 // Today's sets store
-export const todaySets = writable<SetLog[]>([])
+export const todaySets = createPersistedStore<SetLog[]>('todaySets', [])
 
 // Settings store
-export const settings = writable<UserSettings>({
+export const settings = createPersistedStore<UserSettings>('settings', {
   defaultSetsPerDay: 10,
   defaultDaysPerWeek: 5,
   defaultCycleWeeks: 2,
@@ -258,3 +285,13 @@ function createToastStore() {
 }
 
 export const toasts = createToastStore()
+
+// Clear all data on logout
+export function clearAllData() {
+  user.reset()
+  exercises.reset()
+  cycles.reset()
+  todaySets.reset()
+  settings.reset()
+  pendingSets.clear()
+}
