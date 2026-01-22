@@ -9,7 +9,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
   }
 
   try {
-    const { clerkId, email, name } = await request.json()
+    const { clerkId, email, name, localDate } = await request.json()
 
     // Get or create user
     let user = await queries.getUserByClerkId(db, clerkId)
@@ -33,7 +33,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
     const cycles = (cyclesResult.results || []).map(formatDbCycle)
 
     // Get today's sets
-    const todaySetsResult = await queries.getTodaySetsByUser(db, user.id)
+    const todaySetsResult = await queries.getTodaySetsByUser(db, user.id, localDate)
     const todaySets = (todaySetsResult.results || []).map(formatDbSet)
 
     // Get settings

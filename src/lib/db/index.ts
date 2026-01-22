@@ -1,4 +1,5 @@
 import type { D1Database } from '@cloudflare/workers-types'
+import { getLocalISOString, getLocalDateString } from '../utils/date'
 
 export interface DbUser {
   id: number
@@ -170,16 +171,16 @@ export const queries = {
 
   deactivateCycle: (db: D1Database, id: number) =>
     db
-      .prepare("UPDATE cycles SET is_active = 0, end_date = STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ? RETURNING *")
-      .bind(id)
+      .prepare('UPDATE cycles SET is_active = 0, end_date = ? WHERE id = ? RETURNING *')
+      .bind(getLocalISOString(), id)
       .first<DbCycle>(),
 
   // Sets
   getSetsByCycle: (db: D1Database, cycleId: number) =>
     db.prepare('SELECT * FROM sets WHERE cycle_id = ? ORDER BY completed_at DESC').bind(cycleId).all<DbSet>(),
 
-  getTodaySetsByUser: async (db: D1Database, userId: number) => {
-    const today = new Date().toISOString().split('T')[0]
+  getTodaySetsByUser: async (db: D1Database, userId: number, localDate?: string) => {
+    const today = localDate || getLocalDateString()
     const result = await db
       .prepare(
         `
@@ -219,18 +220,18 @@ export const queries = {
       VALUES (?, ?, ?, ?) RETURNING *
     `,
       )
-      .bind(cycleId, repsCompleted, completedAt || new Date().toISOString(), notes || null)
+      .bind(cycleId, repsCompleted, completedAt || getLocalISOString(), notes || null)
       .first<DbSet>(),
 
   updateSet: (db: D1Database, id: number, data: { completedAt?: string; notes?: string }) =>
     db
       .prepare(
         `
-      UPDATE sets SET completed_at = COALESCE(?, completed_at), notes = COALESCE(?, notes), edited_at = STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now')
+      UPDATE sets SET completed_at = COALESCE(?, completed_at), notes = COALESCE(?, notes), edited_at = ?
       WHERE id = ? RETURNING *
     `,
       )
-      .bind(data.completedAt || null, data.notes || null, id)
+      .bind(data.completedAt || null, data.notes || null, getLocalISOString(), id)
       .first<DbSet>(),
 
   deleteSet: (db: D1Database, id: number) => db.prepare('DELETE FROM sets WHERE id = ?').bind(id).run(),

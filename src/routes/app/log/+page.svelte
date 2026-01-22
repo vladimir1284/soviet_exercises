@@ -3,6 +3,7 @@
   import { ProgressRing, Modal } from '$components'
   import { exercises, cycles, todaySets, todayProgress, toasts } from '$stores'
   import type { Exercise, Cycle, SetLog } from '$stores'
+  import { getLocalISOString } from '$lib/utils/date'
 
   // Selected exercise
   let selectedExerciseId: number | null = null
@@ -81,7 +82,7 @@
     const date = new Date(editingSet.completedAt)
     const [hours, minutes] = editTime.split(':')
     date.setHours(parseInt(hours), parseInt(minutes), 0, 0)
-    const completedAt = date.toISOString()
+    const completedAt = getLocalISOString(date)
 
     try {
       const response = await fetch(`/api/sets/${editingSet.id}`, {

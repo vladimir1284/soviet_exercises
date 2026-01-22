@@ -3,6 +3,7 @@
   import { onMount } from 'svelte'
   import { ProgressRing } from '$components'
   import { user, exercises, cycles } from '$stores'
+  import { getLocalDateString } from '$lib/utils/date'
 
   // Stats data
   let stats = {
@@ -37,7 +38,8 @@
 
     isLoading = true
     try {
-      const response = await fetch(`/api/stats?userId=${$user.id}`)
+      const localDate = getLocalDateString()
+      const response = await fetch(`/api/stats?userId=${$user.id}&localDate=${localDate}`)
       if (response.ok) {
         const data = await response.json()
         stats = data.stats
@@ -85,9 +87,7 @@
 
   // Check if today
   function isToday(dateStr: string): boolean {
-    const date = new Date(dateStr)
-    const today = new Date()
-    return date.toDateString() === today.toDateString()
+    return dateStr === getLocalDateString()
   }
 </script>
 

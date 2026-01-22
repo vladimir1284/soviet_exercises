@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
 import { queries, formatDbCycle } from '$db'
+import { getLocalISOString } from '$lib/utils/date'
 
 // Create new cycle (and deactivate previous one for same exercise)
 export const POST: RequestHandler = async ({ request, platform }) => {
@@ -25,7 +26,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
     }
 
     // Create new cycle
-    const today = new Date().toISOString()
+    const today = getLocalISOString()
     const cycle = await queries.createCycle(db, {
       exerciseId,
       maxReps,

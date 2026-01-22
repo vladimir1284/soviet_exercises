@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
 import { queries } from '$db'
+import { getLocalDateString } from '$lib/utils/date'
 
 interface WeekStats {
   date: string
@@ -32,7 +33,8 @@ export const GET: RequestHandler = async ({ url, platform }) => {
     const totalStats = await queries.getTotalStats(db, parseInt(userId))
 
     // Get last 7 days stats
-    const today = new Date()
+    const localDate = url.searchParams.get('localDate') || getLocalDateString()
+    const today = new Date(localDate + 'T12:00:00') // Use noon to avoid DST issues
     const weekAgo = new Date(today)
     weekAgo.setDate(weekAgo.getDate() - 6)
 
@@ -40,7 +42,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
     for (let i = 0; i < 7; i++) {
       const date = new Date(weekAgo)
       date.setDate(date.getDate() + i)
-      const dateStr = date.toISOString().split('T')[0]
+      const dateStr = getLocalDateString(date)
 
       // Count sets for this day
       const dayResult = await db
@@ -62,7 +64,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
     }
 
     // Calculate streaks
-    const { currentStreak, bestStreak } = await calculateStreaks(db, parseInt(userId))
+    const { currentStreak, bestStreak } = await calculateStreaks(db, parseInt(userId), localDate)
 
     // Get cycle history with max reps progression
     const cycleHistory = await db
@@ -115,6 +117,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
 async function calculateStreaks(
   db: D1Database,
   userId: number,
+  localDate: string,
 ): Promise<{ currentStreak: number; bestStreak: number }> {
   // Get all days with at least one set, ordered by date desc
   const result = await db
@@ -142,7 +145,7 @@ async function calculateStreaks(
   let tempStreak = 0
   let prevDate: Date | null = null
 
-  const today = new Date()
+  const today = new Date(localDate + 'T12:00:00')
   today.setHours(0, 0, 0, 0)
 
   for (const { day } of days) {
@@ -214,7 +217,8 @@ async function getWeeklyEvaluations(db: D1Database, userId: number): Promise<Wee
 
   for (const cycle of cycles.results || []) {
     const startDate = new Date(cycle.start_date)
-    const now = new Date()
+    const localDate = getLocalDateString()
+    const now = new Date(localDate + 'T23:59:59')
 
     // Calculate weeks since start
     let weekStart = new Date(startDate)
@@ -236,7 +240,7 @@ async function getWeeklyEvaluations(db: D1Database, userId: number): Promise<Wee
             AND DATE(completed_at) <= ?
         `,
           )
-          .bind(cycle.id, weekStart.toISOString().split('T')[0], weekEnd.toISOString().split('T')[0])
+          .bind(cycle.id, getLocalDateString(weekStart), getLocalDateString(weekEnd))
           .first<{ days: number }>()
 
         const completedDays = daysResult?.days || 0
@@ -252,8 +256,8 @@ async function getWeeklyEvaluations(db: D1Database, userId: number): Promise<Wee
         }
 
         evaluations.push({
-          weekStart: weekStart.toISOString().split('T')[0],
-          weekEnd: weekEnd.toISOString().split('T')[0],
+          weekStart: getLocalDateString(weekStart),
+          weekEnd: getLocalDateString(weekEnd),
           targetDays: target,
           completedDays,
           status,

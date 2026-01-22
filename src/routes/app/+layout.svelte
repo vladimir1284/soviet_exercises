@@ -5,6 +5,7 @@
   import { _ } from 'svelte-i18n'
   import { BottomNav } from '$components'
   import { user, exercises, cycles, todaySets, settings, isLoading } from '$stores'
+  import { getLocalDateString } from '$lib/utils/date'
 
   let clerk: any = null
 
@@ -47,6 +48,7 @@
           clerkId: clerk.user.id,
           email: clerk.user.primaryEmailAddress?.emailAddress,
           name: clerk.user.firstName,
+          localDate: getLocalDateString(),
         }),
       })
 

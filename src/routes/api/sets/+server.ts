@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
 import { queries, formatDbSet } from '$db'
+import { getLocalISOString } from '$lib/utils/date'
 
 // Create new set
 export const POST: RequestHandler = async ({ request, platform }) => {
@@ -16,7 +17,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
       return json({ error: 'Cycle ID and reps required' }, { status: 400 })
     }
 
-    const set = await queries.createSet(db, cycleId, repsCompleted, completedAt || new Date().toISOString(), notes)
+    const set = await queries.createSet(db, cycleId, repsCompleted, completedAt || getLocalISOString(), notes)
 
     if (!set) {
       return json({ error: 'Failed to create set' }, { status: 500 })
