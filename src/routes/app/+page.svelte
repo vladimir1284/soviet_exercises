@@ -19,11 +19,18 @@
   // Modal state
   let showAddExercise = false
   let showConfigureCycle = false
+  let showEditExercise = false
   let selectedExercise: Exercise | null = null
 
   // Form state
   let newExercise = { name: '', icon: '💪', color: '#6366f1' }
-  let cycleConfig = { maxReps: 0, repsPerSet: 0 }
+  let cycleConfig = { maxReps: 0, repsPerSet: 0, metricValues: [] as { metricId: number; value: string }[] }
+  let editingExerciseData = {
+    name: '',
+    icon: '',
+    color: '',
+    metrics: [] as { id?: number; label: string; unit: string }[],
+  }
 
   // Get active cycle for an exercise
   function getActiveCycle(exerciseId: number): Cycle | undefined {
@@ -126,10 +133,54 @@
   }
 
   // Handle configure cycle
-  function handleConfigure(exercise: Exercise) {
+  async function handleConfigure(exercise: Exercise) {
     selectedExercise = exercise
-    cycleConfig = { maxReps: 0, repsPerSet: 0 }
+    cycleConfig = { maxReps: 0, repsPerSet: 0, metricValues: [] }
+
+    // Fetch metrics for this exercise
+    try {
+      const response = await fetch(`/api/exercises/${exercise.id}/metrics`)
+      if (response.ok) {
+        const metrics = await response.json()
+        selectedExercise.metrics = metrics
+        cycleConfig.metricValues = metrics.map((m: any) => ({ metricId: m.id, value: '' }))
+      }
+    } catch (e) {
+      console.error('Failed to fetch metrics:', e)
+    }
+
     showConfigureCycle = true
+  }
+
+  // Handle edit exercise
+  async function handleEdit(exercise: Exercise) {
+    selectedExercise = exercise
+    editingExerciseData = {
+      name: exercise.name,
+      icon: exercise.icon,
+      color: exercise.color,
+      metrics: [],
+    }
+
+    // Fetch metrics
+    try {
+      const response = await fetch(`/api/exercises/${exercise.id}/metrics`)
+      if (response.ok) {
+        editingExerciseData.metrics = await response.json()
+      }
+    } catch (e) {
+      console.error('Failed to fetch metrics:', e)
+    }
+
+    showEditExercise = true
+  }
+
+  function addMetric() {
+    editingExerciseData.metrics = [...editingExerciseData.metrics, { label: '', unit: '' }]
+  }
+
+  function removeMetric(index: number) {
+    editingExerciseData.metrics = editingExerciseData.metrics.filter((_, i) => i !== index)
   }
 
   // Calculate reps per set
@@ -153,10 +204,62 @@
         exercises.update(list => [...list, exercise])
         showAddExercise = false
         newExercise = { name: '', icon: '💪', color: '#6366f1' }
-        toasts.add({ message: $_('log.logged'), type: 'success' })
+        toasts.add({ message: $_('common.save'), type: 'success' })
 
         // Open configure modal
         handleConfigure(exercise)
+      }
+    } catch (e) {
+      toasts.add({ message: $_('common.error'), type: 'error' })
+    }
+  }
+
+  // Save exercise edits and metrics
+  async function updateExercise() {
+    if (!selectedExercise || !editingExerciseData.name.trim()) return
+
+    try {
+      // Update exercise basic info
+      const response = await fetch(`/api/exercises/${selectedExercise.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editingExerciseData.name,
+          icon: editingExerciseData.icon,
+          color: editingExerciseData.color,
+        }),
+      })
+
+      if (response.ok) {
+        const updated = await response.json()
+        exercises.update(list => list.map(e => (e.id === updated.id ? updated : e)))
+
+        // Manage metrics
+        // For simplicity, we'll delete all existing metrics and recreate them
+        // In a real app, we'd diff them, but this is easier for now
+        // First, get current metrics to delete them
+        const currentMetricsRes = await fetch(`/api/exercises/${selectedExercise.id}/metrics`)
+        if (currentMetricsRes.ok) {
+          const currentMetrics = await currentMetricsRes.json()
+          for (const m of currentMetrics) {
+            await fetch(`/api/exercises/${selectedExercise.id}/metrics?metricId=${m.id}`, { method: 'DELETE' })
+          }
+        }
+
+        // Create new metrics
+        for (const m of editingExerciseData.metrics) {
+          if (m.label.trim()) {
+            await fetch(`/api/exercises/${selectedExercise!.id}/metrics`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ label: m.label, unit: m.unit }),
+            })
+          }
+        }
+
+        showEditExercise = false
+        selectedExercise = null
+        toasts.add({ message: $_('common.save'), type: 'success' })
       }
     } catch (e) {
       toasts.add({ message: $_('common.error'), type: 'error' })
@@ -178,6 +281,7 @@
           setsPerDay: $settings.defaultSetsPerDay,
           daysPerWeek: $settings.defaultDaysPerWeek,
           durationWeeks: $settings.defaultCycleWeeks,
+          metricValues: cycleConfig.metricValues,
         }),
       })
 
@@ -290,6 +394,7 @@
             needsRecalibration={cycle ? needsRecalibration(cycle) : false}
             onLog={() => handleQuickLog(exercise)}
             onConfigure={() => handleConfigure(exercise)}
+            onEdit={() => handleEdit(exercise)}
           />
         {/each}
       </div>
@@ -315,17 +420,17 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
+      <label id="exercise-icon-label" class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
         {$_('exercises.icon')}
       </label>
-      <EmojiPicker bind:selected={newExercise.icon} />
+      <EmojiPicker bind:selected={newExercise.icon} aria-labelledby="exercise-icon-label" />
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
+      <label id="exercise-color-label" class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
         {$_('exercises.color')}
       </label>
-      <ColorPicker bind:selected={newExercise.color} />
+      <ColorPicker bind:selected={newExercise.color} aria-labelledby="exercise-color-label" />
     </div>
   </form>
 
@@ -417,6 +522,34 @@
             </p>
           </div>
         </div>
+
+        {#if selectedExercise.metrics && selectedExercise.metrics.length > 0}
+          <div class="pt-4 border-t border-surface-200 dark:border-surface-200/20">
+            <h4 class="text-sm font-semibold text-surface-900 dark:text-surface-900 mb-3">
+              {$_('exercises.metrics') || 'Métricas'}
+            </h4>
+            <div class="space-y-4">
+              {#each selectedExercise.metrics as metric, i}
+                <div>
+                  <label
+                    for="metric-{metric.id}"
+                    class="block text-xs font-medium text-surface-500 dark:text-surface-500 mb-1"
+                  >
+                    {metric.label}
+                    {metric.unit ? `(${metric.unit})` : ''}
+                  </label>
+                  <input
+                    id="metric-{metric.id}"
+                    type="text"
+                    class="input"
+                    bind:value={cycleConfig.metricValues[i].value}
+                    placeholder={$_('common.value') || 'Valor'}
+                  />
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
       {/if}
     </form>
   {/if}
@@ -434,6 +567,88 @@
       </button>
       <button class="btn btn-primary btn-md flex-1" on:click={saveCycle} disabled={cycleConfig.maxReps <= 0}>
         {$_('exercises.startCycle')}
+      </button>
+    </div>
+  </svelte:fragment>
+</Modal>
+
+<!-- Edit Exercise Modal -->
+<Modal
+  bind:open={showEditExercise}
+  title={$_('exercises.edit') || 'Editar Ejercicio'}
+  on:close={() => (showEditExercise = false)}
+>
+  <form class="space-y-6" on:submit|preventDefault={updateExercise}>
+    <div>
+      <label for="edit-name" class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
+        {$_('exercises.name')}
+      </label>
+      <input id="edit-name" type="text" class="input" bind:value={editingExerciseData.name} required />
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
+        {$_('exercises.icon')}
+      </label>
+      <EmojiPicker bind:selected={editingExerciseData.icon} />
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
+        {$_('exercises.color')}
+      </label>
+      <ColorPicker bind:selected={editingExerciseData.color} />
+    </div>
+
+    <div class="pt-4 border-t border-surface-200 dark:border-surface-200/20">
+      <div class="flex items-center justify-between mb-3">
+        <h4 class="text-sm font-semibold text-surface-900 dark:text-surface-900">
+          {$_('exercises.metrics') || 'Métricas'}
+        </h4>
+        <button type="button" class="btn btn-ghost btn-sm text-accent" on:click={addMetric}>
+          + {$_('common.add') || 'Añadir'}
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        {#each editingExerciseData.metrics as metric, i}
+          <div class="flex gap-2 items-start">
+            <div class="flex-1 space-y-2">
+              <label for="edit-metric-label-{i}" class="sr-only">{$_('exercises.metricLabel') || 'Nombre'}</label>
+              <input
+                id="edit-metric-label-{i}"
+                type="text"
+                class="input input-sm"
+                placeholder={$_('exercises.metricLabel') || 'Nombre (ej: Peso)'}
+                bind:value={metric.label}
+              />
+              <label for="edit-metric-unit-{i}" class="sr-only">{$_('exercises.metricUnit') || 'Unidad'}</label>
+              <input
+                id="edit-metric-unit-{i}"
+                type="text"
+                class="input input-sm"
+                placeholder={$_('exercises.metricUnit') || 'Unidad (ej: kg)'}
+                bind:value={metric.unit}
+              />
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm text-red-500 mt-1" on:click={() => removeMetric(i)}>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+            </button>
+          </div>
+        {/each}
+      </div>
+    </div>
+  </form>
+
+  <svelte:fragment slot="footer">
+    <div class="flex gap-3">
+      <button class="btn btn-secondary btn-md flex-1" on:click={() => (showEditExercise = false)}>
+        {$_('common.cancel')}
+      </button>
+      <button class="btn btn-primary btn-md flex-1" on:click={updateExercise}>
+        {$_('common.save')}
       </button>
     </div>
   </svelte:fragment>

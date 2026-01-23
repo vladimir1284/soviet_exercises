@@ -58,6 +58,27 @@ CREATE TABLE IF NOT EXISTS sets (
   FOREIGN KEY (cycle_id) REFERENCES cycles(id) ON DELETE CASCADE
 );
 
+-- Exercise metrics definitions
+CREATE TABLE IF NOT EXISTS exercise_metrics (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  exercise_id INTEGER NOT NULL,
+  label TEXT NOT NULL,
+  unit TEXT,
+  created_at DATETIME DEFAULT (STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
+);
+
+-- Values for metrics recorded in each cycle
+CREATE TABLE IF NOT EXISTS cycle_metric_values (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cycle_id INTEGER NOT NULL,
+  metric_id INTEGER NOT NULL,
+  value TEXT NOT NULL,
+  created_at DATETIME DEFAULT (STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  FOREIGN KEY (cycle_id) REFERENCES cycles(id) ON DELETE CASCADE,
+  FOREIGN KEY (metric_id) REFERENCES exercise_metrics(id) ON DELETE CASCADE
+);
+
 -- User settings/preferences
 CREATE TABLE IF NOT EXISTS user_settings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -79,6 +100,8 @@ CREATE INDEX IF NOT EXISTS idx_cycles_exercise ON cycles(exercise_id);
 CREATE INDEX IF NOT EXISTS idx_cycles_active ON cycles(is_active);
 CREATE INDEX IF NOT EXISTS idx_sets_cycle ON sets(cycle_id);
 CREATE INDEX IF NOT EXISTS idx_sets_completed ON sets(completed_at);
+CREATE INDEX IF NOT EXISTS idx_metrics_exercise ON exercise_metrics(exercise_id);
+CREATE INDEX IF NOT EXISTS idx_metric_values_cycle ON cycle_metric_values(cycle_id);
 
 -- Trigger to update updated_at
 CREATE TRIGGER IF NOT EXISTS update_users_timestamp 

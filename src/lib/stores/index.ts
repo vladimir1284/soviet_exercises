@@ -20,6 +20,14 @@ export interface Exercise {
   color: string
   isActive: boolean
   sortOrder: number
+  metrics?: ExerciseMetric[]
+}
+
+export interface ExerciseMetric {
+  id: number
+  exerciseId: number
+  label: string
+  unit: string | null
 }
 
 export interface Cycle {
@@ -34,6 +42,16 @@ export interface Cycle {
   endDate?: string
   isActive: boolean
   notes?: string
+  metricValues?: CycleMetricValue[]
+}
+
+export interface CycleMetricValue {
+  id: number
+  cycleId: number
+  metricId: number
+  value: string
+  label?: string
+  unit?: string | null
 }
 
 export interface SetLog {

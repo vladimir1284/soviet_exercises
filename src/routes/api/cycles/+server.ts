@@ -11,7 +11,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
   }
 
   try {
-    const { exerciseId, maxReps, repsPerSet, setsPerDay, daysPerWeek, durationWeeks } = await request.json()
+    const { exerciseId, maxReps, repsPerSet, setsPerDay, daysPerWeek, durationWeeks, metricValues } = await request.json()
 
     if (!exerciseId || !maxReps) {
       return json({ error: 'Exercise ID and max reps required' }, { status: 400 })
@@ -39,6 +39,15 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 
     if (!cycle) {
       return json({ error: 'Failed to create cycle' }, { status: 500 })
+    }
+
+    // Save metric values if provided
+    if (metricValues && Array.isArray(metricValues)) {
+      for (const mv of metricValues) {
+        if (mv.metricId && mv.value !== undefined) {
+          await queries.createMetricValue(db, cycle.id, mv.metricId, String(mv.value))
+        }
+      }
     }
 
     return json(formatDbCycle(cycle))

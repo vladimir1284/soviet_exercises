@@ -51,6 +51,22 @@ export interface DbSet {
   created_at: string
 }
 
+export interface DbExerciseMetric {
+  id: number
+  exercise_id: number
+  label: string
+  unit: string | null
+  created_at: string
+}
+
+export interface DbCycleMetricValue {
+  id: number
+  cycle_id: number
+  metric_id: number
+  value: string
+  created_at: string
+}
+
 export interface DbUserSettings {
   id: number
   user_id: number
@@ -117,6 +133,37 @@ export const queries = {
   },
 
   deleteExercise: (db: D1Database, id: number) => db.prepare('DELETE FROM exercises WHERE id = ?').bind(id).run(),
+
+  // Metrics
+  getMetricsByExercise: (db: D1Database, exerciseId: number) =>
+    db.prepare('SELECT * FROM exercise_metrics WHERE exercise_id = ?').bind(exerciseId).all<DbExerciseMetric>(),
+
+  createMetric: (db: D1Database, exerciseId: number, label: string, unit?: string) =>
+    db
+      .prepare('INSERT INTO exercise_metrics (exercise_id, label, unit) VALUES (?, ?, ?) RETURNING *')
+      .bind(exerciseId, label, unit || null)
+      .first<DbExerciseMetric>(),
+
+  deleteMetric: (db: D1Database, id: number) => db.prepare('DELETE FROM exercise_metrics WHERE id = ?').bind(id).run(),
+
+  // Metric Values
+  getMetricValuesByCycle: (db: D1Database, cycleId: number) =>
+    db
+      .prepare(
+        `
+      SELECT mv.*, m.label, m.unit FROM cycle_metric_values mv
+      JOIN exercise_metrics m ON mv.metric_id = m.id
+      WHERE mv.cycle_id = ?
+    `,
+      )
+      .bind(cycleId)
+      .all<DbCycleMetricValue & { label: string; unit: string | null }>(),
+
+  createMetricValue: (db: D1Database, cycleId: number, metricId: number, value: string) =>
+    db
+      .prepare('INSERT INTO cycle_metric_values (cycle_id, metric_id, value) VALUES (?, ?, ?) RETURNING *')
+      .bind(cycleId, metricId, value)
+      .first<DbCycleMetricValue>(),
 
   // Cycles
   getCyclesByExercise: (db: D1Database, exerciseId: number) =>
@@ -356,5 +403,25 @@ export function formatDbSet(db: DbSet) {
     dayNumber: db.day_number,
     setNumber: db.set_number,
     notes: db.notes,
+  }
+}
+
+export function formatDbMetric(db: DbExerciseMetric) {
+  return {
+    id: db.id,
+    exerciseId: db.exercise_id,
+    label: db.label,
+    unit: db.unit,
+  }
+}
+
+export function formatDbMetricValue(db: DbCycleMetricValue & { label?: string; unit?: string | null }) {
+  return {
+    id: db.id,
+    cycleId: db.cycle_id,
+    metricId: db.metric_id,
+    value: db.value,
+    label: db.label,
+    unit: db.unit,
   }
 }

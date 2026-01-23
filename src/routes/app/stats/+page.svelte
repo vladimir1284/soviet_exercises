@@ -234,6 +234,21 @@
                   <p class="text-xs text-surface-500 dark:text-surface-400">max</p>
                 </div>
               </div>
+
+              {#if cycle.metricValues && cycle.metricValues.length > 0}
+                <div class="mt-3 pt-3 border-t border-surface-200 dark:border-surface-200/20 grid grid-cols-2 gap-2">
+                  {#each cycle.metricValues as mv}
+                    <div class="flex flex-col">
+                      <span class="text-[10px] uppercase tracking-wider text-surface-500 dark:text-surface-500">
+                        {mv.label}
+                      </span>
+                      <span class="text-sm font-medium text-surface-900 dark:text-surface-900">
+                        {mv.value} <span class="text-xs font-normal text-surface-500">{mv.unit || ''}</span>
+                      </span>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
             </div>
           {/each}
         </div>

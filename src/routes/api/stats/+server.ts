@@ -73,7 +73,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
     const { currentStreak, bestStreak } = await calculateStreaks(db, parseInt(userId), localDate, timezoneOffset)
 
     // Get cycle history with max reps progression
-    const cycleHistory = await db
+    const cycleHistoryResult = await db
       .prepare(
         `
       SELECT c.id, e.name as exercise_name, c.max_reps, c.start_date, c.end_date
@@ -93,6 +93,19 @@ export const GET: RequestHandler = async ({ url, platform }) => {
         end_date: string | null
       }>()
 
+    const cycleHistory = []
+    for (const c of cycleHistoryResult.results || []) {
+      const metricValues = await queries.getMetricValuesByCycle(db, c.id)
+      cycleHistory.push({
+        id: c.id,
+        exerciseName: c.exercise_name,
+        maxReps: c.max_reps,
+        startDate: c.start_date,
+        endDate: c.end_date,
+        metricValues: metricValues.results || [],
+      })
+    }
+
     // Get weekly evaluations
     const weekEvaluations = await getWeeklyEvaluations(db, parseInt(userId), timezoneOffset)
 
@@ -105,13 +118,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
         bestStreak,
       },
       weekStats,
-      cycleHistory: (cycleHistory.results || []).map((c: any) => ({
-        id: c.id,
-        exerciseName: c.exercise_name,
-        maxReps: c.max_reps,
-        startDate: c.start_date,
-        endDate: c.end_date,
-      })),
+      cycleHistory,
       weekEvaluations,
     })
   } catch (error) {
