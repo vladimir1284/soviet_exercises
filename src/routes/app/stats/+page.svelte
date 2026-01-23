@@ -39,7 +39,10 @@
     isLoading = true
     try {
       const localDate = getLocalDateString()
-      const response = await fetch(`/api/stats?userId=${$user.id}&localDate=${localDate}`)
+      const timezoneOffset = -new Date().getTimezoneOffset()
+      const response = await fetch(
+        `/api/stats?userId=${$user.id}&localDate=${localDate}&timezoneOffset=${timezoneOffset}`,
+      )
       if (response.ok) {
         const data = await response.json()
         stats = data.stats

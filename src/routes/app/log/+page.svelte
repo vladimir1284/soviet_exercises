@@ -48,7 +48,7 @@
     const setData = {
       cycleId: selectedCycle.id,
       repsCompleted: selectedCycle.repsPerSet,
-      completedAt: new Date().toISOString(),
+      completedAt: getLocalISOString(),
     }
 
     if (!$isOnline) {

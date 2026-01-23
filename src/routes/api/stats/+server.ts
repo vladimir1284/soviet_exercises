@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
+import type { D1Database } from '@cloudflare/workers-types'
 import { queries } from '$db'
 import { getLocalDateString } from '$lib/utils/date'
 
@@ -24,13 +25,16 @@ export const GET: RequestHandler = async ({ url, platform }) => {
   }
 
   const userId = url.searchParams.get('userId')
+  const timezoneOffsetStr = url.searchParams.get('timezoneOffset')
+  const timezoneOffset = timezoneOffsetStr ? parseInt(timezoneOffsetStr) : undefined
+
   if (!userId) {
     return json({ error: 'User ID required' }, { status: 400 })
   }
 
   try {
     // Get total stats
-    const totalStats = await queries.getTotalStats(db, parseInt(userId))
+    const totalStats = await queries.getTotalStats(db, parseInt(userId), timezoneOffset)
 
     // Get last 7 days stats
     const localDate = url.searchParams.get('localDate') || getLocalDateString()
@@ -39,6 +43,8 @@ export const GET: RequestHandler = async ({ url, platform }) => {
     weekAgo.setDate(weekAgo.getDate() - 6)
 
     const weekStats: WeekStats[] = []
+    const offsetModifier = timezoneOffset !== undefined ? `, '${timezoneOffset} minutes'` : ''
+
     for (let i = 0; i < 7; i++) {
       const date = new Date(weekAgo)
       date.setDate(date.getDate() + i)
@@ -51,7 +57,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
         SELECT COUNT(*) as count FROM sets s
         JOIN cycles c ON s.cycle_id = c.id
         JOIN exercises e ON c.exercise_id = e.id
-        WHERE e.user_id = ? AND DATE(s.completed_at) = ?
+        WHERE e.user_id = ? AND DATE(s.completed_at${offsetModifier}) = ?
       `,
         )
         .bind(parseInt(userId), dateStr)
@@ -64,7 +70,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
     }
 
     // Calculate streaks
-    const { currentStreak, bestStreak } = await calculateStreaks(db, parseInt(userId), localDate)
+    const { currentStreak, bestStreak } = await calculateStreaks(db, parseInt(userId), localDate, timezoneOffset)
 
     // Get cycle history with max reps progression
     const cycleHistory = await db
@@ -88,7 +94,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
       }>()
 
     // Get weekly evaluations
-    const weekEvaluations = await getWeeklyEvaluations(db, parseInt(userId))
+    const weekEvaluations = await getWeeklyEvaluations(db, parseInt(userId), timezoneOffset)
 
     return json({
       stats: {
@@ -99,7 +105,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
         bestStreak,
       },
       weekStats,
-      cycleHistory: (cycleHistory.results || []).map(c => ({
+      cycleHistory: (cycleHistory.results || []).map((c: any) => ({
         id: c.id,
         exerciseName: c.exercise_name,
         maxReps: c.max_reps,
@@ -118,12 +124,14 @@ async function calculateStreaks(
   db: D1Database,
   userId: number,
   localDate: string,
+  timezoneOffset?: number,
 ): Promise<{ currentStreak: number; bestStreak: number }> {
   // Get all days with at least one set, ordered by date desc
+  const offsetModifier = timezoneOffset !== undefined ? `, '${timezoneOffset} minutes'` : ''
   const result = await db
     .prepare(
       `
-    SELECT DISTINCT DATE(s.completed_at) as day
+    SELECT DISTINCT DATE(s.completed_at${offsetModifier}) as day
     FROM sets s
     JOIN cycles c ON s.cycle_id = c.id
     JOIN exercises e ON c.exercise_id = e.id
@@ -182,7 +190,11 @@ async function calculateStreaks(
   return { currentStreak, bestStreak }
 }
 
-async function getWeeklyEvaluations(db: D1Database, userId: number): Promise<WeekEvaluation[]> {
+async function getWeeklyEvaluations(
+  db: D1Database,
+  userId: number,
+  timezoneOffset?: number,
+): Promise<WeekEvaluation[]> {
   // Get user settings for week start
   const settings = await db
     .prepare(
@@ -230,14 +242,15 @@ async function getWeeklyEvaluations(db: D1Database, userId: number): Promise<Wee
       // Only evaluate completed weeks
       if (weekEnd < now) {
         // Count days with at least one set this week
+        const offsetModifier = timezoneOffset !== undefined ? `, '${timezoneOffset} minutes'` : ''
         const daysResult = await db
           .prepare(
             `
-          SELECT COUNT(DISTINCT DATE(completed_at)) as days
+          SELECT COUNT(DISTINCT DATE(completed_at${offsetModifier})) as days
           FROM sets
           WHERE cycle_id = ? 
-            AND DATE(completed_at) >= ? 
-            AND DATE(completed_at) <= ?
+            AND DATE(completed_at${offsetModifier}) >= ? 
+            AND DATE(completed_at${offsetModifier}) <= ?
         `,
           )
           .bind(cycle.id, getLocalDateString(weekStart), getLocalDateString(weekEnd))

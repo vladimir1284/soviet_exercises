@@ -179,15 +179,16 @@ export const queries = {
   getSetsByCycle: (db: D1Database, cycleId: number) =>
     db.prepare('SELECT * FROM sets WHERE cycle_id = ? ORDER BY completed_at DESC').bind(cycleId).all<DbSet>(),
 
-  getTodaySetsByUser: async (db: D1Database, userId: number, localDate?: string) => {
+  getTodaySetsByUser: async (db: D1Database, userId: number, localDate?: string, timezoneOffset?: number) => {
     const today = localDate || getLocalDateString()
+    const offsetModifier = timezoneOffset !== undefined ? `, '${timezoneOffset} minutes'` : ''
     const result = await db
       .prepare(
         `
       SELECT s.* FROM sets s
       JOIN cycles c ON s.cycle_id = c.id
       JOIN exercises e ON c.exercise_id = e.id
-      WHERE e.user_id = ? AND DATE(s.completed_at) = ?
+      WHERE e.user_id = ? AND DATE(s.completed_at${offsetModifier}) = ?
       ORDER BY s.completed_at DESC
     `,
       )
@@ -196,14 +197,15 @@ export const queries = {
     return result
   },
 
-  getSetsByDateRange: async (db: D1Database, userId: number, startDate: string, endDate: string) => {
+  getSetsByDateRange: async (db: D1Database, userId: number, startDate: string, endDate: string, timezoneOffset?: number) => {
+    const offsetModifier = timezoneOffset !== undefined ? `, '${timezoneOffset} minutes'` : ''
     const result = await db
       .prepare(
         `
       SELECT s.*, c.exercise_id FROM sets s
       JOIN cycles c ON s.cycle_id = c.id
       JOIN exercises e ON c.exercise_id = e.id
-      WHERE e.user_id = ? AND DATE(s.completed_at) BETWEEN ? AND ?
+      WHERE e.user_id = ? AND DATE(s.completed_at${offsetModifier}) BETWEEN ? AND ?
       ORDER BY s.completed_at DESC
     `,
       )
@@ -258,14 +260,15 @@ export const queries = {
   },
 
   // Stats
-  getTotalStats: async (db: D1Database, userId: number) => {
+  getTotalStats: async (db: D1Database, userId: number, timezoneOffset?: number) => {
+    const offsetModifier = timezoneOffset !== undefined ? `, '${timezoneOffset} minutes'` : ''
     const result = await db
       .prepare(
         `
       SELECT 
         COUNT(s.id) as total_sets,
         SUM(s.reps_completed) as total_reps,
-        COUNT(DISTINCT DATE(s.completed_at)) as active_days
+        COUNT(DISTINCT DATE(s.completed_at${offsetModifier})) as active_days
       FROM sets s
       JOIN cycles c ON s.cycle_id = c.id
       JOIN exercises e ON c.exercise_id = e.id
@@ -277,7 +280,8 @@ export const queries = {
     return result
   },
 
-  getStatsForPeriod: async (db: D1Database, userId: number, startDate: string, endDate: string) => {
+  getStatsForPeriod: async (db: D1Database, userId: number, startDate: string, endDate: string, timezoneOffset?: number) => {
+    const offsetModifier = timezoneOffset !== undefined ? `, '${timezoneOffset} minutes'` : ''
     const result = await db
       .prepare(
         `
@@ -289,7 +293,7 @@ export const queries = {
       FROM sets s
       JOIN cycles c ON s.cycle_id = c.id
       JOIN exercises e ON c.exercise_id = e.id
-      WHERE e.user_id = ? AND DATE(s.completed_at) BETWEEN ? AND ?
+      WHERE e.user_id = ? AND DATE(s.completed_at${offsetModifier}) BETWEEN ? AND ?
       GROUP BY e.id
     `,
       )

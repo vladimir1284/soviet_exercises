@@ -68,6 +68,7 @@
           email: clerk.user.primaryEmailAddress?.emailAddress,
           name: clerk.user.firstName,
           localDate: getLocalDateString(),
+          timezoneOffset: -new Date().getTimezoneOffset(),
         }),
       })
 

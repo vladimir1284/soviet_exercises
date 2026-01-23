@@ -32,3 +32,10 @@ export function getLocalDateString(date: Date = new Date()): string {
   const pad = (num: number) => String(num).padStart(2, '0')
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
+
+/**
+ * Get current timezone offset in minutes (e.g., -300 for EST)
+ */
+export function getTimezoneOffsetMinutes(): number {
+  return -new Date().getTimezoneOffset()
+}
