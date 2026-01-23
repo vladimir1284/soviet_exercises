@@ -12,17 +12,31 @@
   onMount(async () => {
     if (!browser) return
 
-    try {
-      // Load Clerk
-      const { Clerk } = await import('@clerk/clerk-js')
-      clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key')
+    // Immediate offline check
+    if (!navigator.onLine && $user) {
+      console.log('Offline detected, using cached user data')
+      isLoading.set(false)
+      return
+    }
 
-      await clerk.load()
+    try {
+      // Load Clerk with a timeout
+      const clerkPromise = (async () => {
+        const { Clerk } = await import('@clerk/clerk-js')
+        const instance = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key')
+        await instance.load()
+        return instance
+      })()
+
+      // Timeout after 5 seconds
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Clerk load timeout')), 5000))
+
+      clerk = (await Promise.race([clerkPromise, timeoutPromise])) as any
 
       if (!clerk.user) {
-        // If no clerk user but we have a cached user, we might be offline
+        // If no clerk user but we have a cached user, we might be offline or session expired
         if ($user) {
-          console.log('Using cached user data (offline)')
+          console.log('No Clerk user, using cached user data')
           isLoading.set(false)
           return
         }
@@ -43,8 +57,8 @@
       // Load user data from API
       await loadUserData()
     } catch (e) {
-      console.error('App initialization failed:', e)
-      // If initialization fails (likely offline) but we have a cached user, continue
+      console.error('App initialization failed or timed out:', e)
+      // If initialization fails (likely offline or timeout) but we have a cached user, continue
       if ($user) {
         console.log('App initialization failed, using cached data')
       } else {

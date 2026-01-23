@@ -28,18 +28,18 @@ self.addEventListener('fetch', event => {
   const { request } = event
   const url = new URL(request.url)
 
-  // Skip non-GET requests
+  // Skip non-GET requests for caching
   if (request.method !== 'GET') {
     return
   }
 
-  // Skip API calls - always go to network
-  if (url.pathname.startsWith('/api/')) {
-    return
-  }
-
-  // Skip Clerk requests
+  // For Clerk requests, we don't want to cache them but we also don't want them to block
   if (url.hostname.includes('clerk')) {
+    event.respondWith(
+      fetch(request).catch(() => {
+        return new Response('Offline', { status: 503 })
+      }),
+    )
     return
   }
 
