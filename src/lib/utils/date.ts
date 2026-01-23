@@ -39,3 +39,11 @@ export function getLocalDateString(date: Date = new Date()): string {
 export function getTimezoneOffsetMinutes(): number {
   return -new Date().getTimezoneOffset()
 }
+
+/**
+ * Parse a YYYY-MM-DD string as a local Date object
+ */
+export function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  return new Date(year, month - 1, day)
+}

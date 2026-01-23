@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { _ } from 'svelte-i18n'
+  import { _, locale } from 'svelte-i18n'
   import { goto } from '$app/navigation'
   import { ExerciseCard, Modal, EmojiPicker, ColorPicker } from '$components'
   import {
@@ -360,7 +360,7 @@
       {$_('home.greeting', { values: { name: $user?.name || 'User' } })}
     </h1>
     <p class="text-surface-500 dark:text-surface-400">
-      {new Date().toLocaleDateString(undefined, {
+      {new Date().toLocaleDateString($locale || undefined, {
         weekday: 'long',
         month: 'long',
         day: 'numeric',

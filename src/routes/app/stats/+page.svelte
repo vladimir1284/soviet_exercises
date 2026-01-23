@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { _ } from 'svelte-i18n'
+  import { _, locale } from 'svelte-i18n'
   import { onMount } from 'svelte'
   import { ProgressRing, Modal } from '$components'
   import { user, exercises, cycles, toasts } from '$stores'
-  import { getLocalDateString } from '$lib/utils/date'
+  import { getLocalDateString, parseLocalDate } from '$lib/utils/date'
 
   // Stats data
   let stats = {
@@ -147,8 +147,8 @@
 
   // Get day name
   function getDayName(dateStr: string): string {
-    const date = new Date(dateStr)
-    return date.toLocaleDateString(undefined, { weekday: 'short' })
+    const date = parseLocalDate(dateStr)
+    return date.toLocaleDateString($locale || undefined, { weekday: 'short' })
   }
 
   // Check if today
@@ -286,8 +286,10 @@
                     {cycle.exerciseName}
                   </p>
                   <p class="text-xs text-surface-500 dark:text-surface-400">
-                    {new Date(cycle.startDate).toLocaleDateString()} -
-                    {cycle.endDate ? new Date(cycle.endDate).toLocaleDateString() : $_('exercises.active')}
+                    {new Date(cycle.startDate).toLocaleDateString($locale || undefined)} -
+                    {cycle.endDate
+                      ? new Date(cycle.endDate).toLocaleDateString($locale || undefined)
+                      : $_('exercises.active')}
                   </p>
                 </div>
                 <div class="text-right">
@@ -417,7 +419,7 @@
             {selectedCycle.exerciseName}
           </h3>
           <p class="text-xs text-surface-500">
-            {new Date(selectedCycle.startDate).toLocaleDateString()}
+            {new Date(selectedCycle.startDate).toLocaleDateString($locale || undefined)}
           </p>
         </div>
       </div>

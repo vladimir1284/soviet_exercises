@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { _ } from 'svelte-i18n'
+  import { _, locale } from 'svelte-i18n'
   import { ProgressRing, Modal } from '$components'
   import { exercises, cycles, todaySets, todayProgress, toasts, isOnline, pendingSets, allTodaySets } from '$stores'
   import type { Exercise, Cycle, SetLog } from '$stores'
@@ -177,7 +177,7 @@
 
   // Format time
   function formatTime(dateStr: string): string {
-    return new Date(dateStr).toLocaleTimeString(undefined, {
+    return new Date(dateStr).toLocaleTimeString($locale || undefined, {
       hour: '2-digit',
       minute: '2-digit',
     })
