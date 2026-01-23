@@ -22,6 +22,7 @@ export interface DbExercise {
   is_active: number
   sort_order: number
   created_at: string
+  sets_count?: number
 }
 
 export interface DbCycle {
@@ -105,12 +106,36 @@ export const queries = {
   // Exercises
   getExercisesByUser: (db: D1Database, userId: number) =>
     db
-      .prepare('SELECT * FROM exercises WHERE user_id = ? ORDER BY sort_order, created_at')
+      .prepare(
+        `
+      SELECT e.*, (
+        SELECT COUNT(s.id) FROM sets s
+        JOIN cycles c ON s.cycle_id = c.id
+        WHERE c.exercise_id = e.id
+      ) as sets_count
+      FROM exercises e 
+      WHERE e.user_id = ? 
+      ORDER BY e.sort_order, e.created_at
+    `,
+      )
       .bind(userId)
       .all<DbExercise>(),
 
   getExerciseById: (db: D1Database, id: number) =>
-    db.prepare('SELECT * FROM exercises WHERE id = ?').bind(id).first<DbExercise>(),
+    db
+      .prepare(
+        `
+      SELECT e.*, (
+        SELECT COUNT(s.id) FROM sets s
+        JOIN cycles c ON s.cycle_id = c.id
+        WHERE c.exercise_id = e.id
+      ) as sets_count
+      FROM exercises e 
+      WHERE e.id = ?
+    `,
+      )
+      .bind(id)
+      .first<DbExercise>(),
 
   createExercise: (db: D1Database, userId: number, name: string, icon: string, color: string) =>
     db
@@ -353,6 +378,20 @@ export const queries = {
       }>()
     return result
   },
+
+  countSetsByExercise: async (db: D1Database, exerciseId: number) => {
+    const result = await db
+      .prepare(
+        `
+      SELECT COUNT(s.id) as count FROM sets s
+      JOIN cycles c ON s.cycle_id = c.id
+      WHERE c.exercise_id = ?
+    `,
+      )
+      .bind(exerciseId)
+      .first<{ count: number }>()
+    return result?.count || 0
+  },
 }
 
 // Helper functions
@@ -374,6 +413,7 @@ export function formatDbExercise(db: DbExercise) {
     color: db.color,
     isActive: toBoolean(db.is_active),
     sortOrder: db.sort_order,
+    setsCount: db.sets_count || 0,
   }
 }
 

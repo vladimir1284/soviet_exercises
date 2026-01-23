@@ -41,6 +41,8 @@
     "color": "Color",
     "delete": "Delete",
     "deleteConfirm": "Delete this exercise and all its history?",
+    "deleteConfirmSimple": "Delete this exercise?",
+    "deleteErrorWithSets": "Cannot delete exercise with registered sets. Delete the sets first.",
     "configure": "Configure cycle",
     "maxReps": "Maximum reps",
     "maxRepsHelp": "Do the exercise to failure and record how many you did",

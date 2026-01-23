@@ -21,6 +21,7 @@ export interface Exercise {
   isActive: boolean
   sortOrder: number
   metrics?: ExerciseMetric[]
+  setsCount: number
 }
 
 export interface ExerciseMetric {

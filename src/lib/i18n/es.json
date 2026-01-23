@@ -41,6 +41,8 @@
     "color": "Color",
     "delete": "Eliminar",
     "deleteConfirm": "¿Eliminar este ejercicio y todo su historial?",
+    "deleteConfirmSimple": "¿Eliminar este ejercicio?",
+    "deleteErrorWithSets": "No se puede eliminar un ejercicio con registros. Borra las tandas primero.",
     "configure": "Configurar ciclo",
     "maxReps": "Máximo de repeticiones",
     "maxRepsHelp": "Haz el ejercicio hasta el fallo y registra cuántas hiciste",

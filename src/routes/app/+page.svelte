@@ -266,6 +266,52 @@
     }
   }
 
+  // Delete exercise
+  async function deleteExercise() {
+    if (!selectedExercise) return
+
+    try {
+      // Fetch latest data to ensure setsCount is up to date
+      const res = await fetch(`/api/exercises/${selectedExercise.id}`)
+      if (res.ok) {
+        const latest = await res.json()
+
+        // Update local store with latest count just in case
+        exercises.update(list => list.map(e => (e.id === latest.id ? { ...e, setsCount: latest.setsCount } : e)))
+
+        if (latest.setsCount > 0) {
+          toasts.add({
+            message:
+              $_('exercises.deleteErrorWithSets') ||
+              'No se puede eliminar un ejercicio con registros. Borra las tandas primero.',
+            type: 'error',
+          })
+          return
+        }
+      }
+
+      if (!confirm($_('exercises.deleteConfirmSimple') || '¿Eliminar este ejercicio?')) {
+        return
+      }
+
+      const response = await fetch(`/api/exercises/${selectedExercise.id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        exercises.update(list => list.filter(e => e.id !== selectedExercise!.id))
+        showEditExercise = false
+        selectedExercise = null
+        toasts.add({ message: $_('common.delete'), type: 'success' })
+      } else {
+        const data = await response.json()
+        toasts.add({ message: data.error || $_('common.error'), type: 'error' })
+      }
+    } catch (e) {
+      toasts.add({ message: $_('common.error'), type: 'error' })
+    }
+  }
+
   // Save cycle configuration
   async function saveCycle() {
     if (!selectedExercise || cycleConfig.maxReps <= 0) return
@@ -644,10 +690,14 @@
 
   <svelte:fragment slot="footer">
     <div class="flex gap-3">
-      <button class="btn btn-secondary btn-md flex-1" on:click={() => (showEditExercise = false)}>
+      <button class="btn btn-ghost btn-md text-red-500" on:click={deleteExercise}>
+        {$_('common.delete')}
+      </button>
+      <div class="flex-1" />
+      <button class="btn btn-secondary btn-md" on:click={() => (showEditExercise = false)}>
         {$_('common.cancel')}
       </button>
-      <button class="btn btn-primary btn-md flex-1" on:click={updateExercise}>
+      <button class="btn btn-primary btn-md" on:click={updateExercise}>
         {$_('common.save')}
       </button>
     </div>
