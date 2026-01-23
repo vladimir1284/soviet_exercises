@@ -1,8 +1,8 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
   import { onMount } from 'svelte'
-  import { ProgressRing } from '$components'
-  import { user, exercises, cycles } from '$stores'
+  import { ProgressRing, Modal } from '$components'
+  import { user, exercises, cycles, toasts } from '$stores'
   import { getLocalDateString } from '$lib/utils/date'
 
   // Stats data
@@ -23,6 +23,11 @@
     endDate: string
   }[] = []
   let isLoading = true
+
+  // Metric logging state
+  let showLogMetrics = false
+  let selectedCycle: any = null
+  let metricValuesToLog: { metricId: number; label: string; unit: string | null; value: string }[] = []
 
   // Period selection
   type Period = 'week' | 'month' | 'all'
@@ -53,6 +58,64 @@
       console.error('Failed to load stats:', e)
     } finally {
       isLoading = false
+    }
+  }
+
+  async function handleLogMetrics(cycle: any) {
+    selectedCycle = cycle
+    const exercise = $exercises.find(e => e.name === cycle.exerciseName)
+    if (!exercise) return
+
+    metricValuesToLog = []
+
+    try {
+      // Fetch metrics for the exercise and current values for this cycle
+      const [metricsRes, valuesRes] = await Promise.all([
+        fetch(`/api/exercises/${exercise.id}/metrics`),
+        fetch(`/api/cycles/${cycle.id}/metrics`),
+      ])
+
+      if (metricsRes.ok && valuesRes.ok) {
+        const metrics = await metricsRes.json()
+        const values = await valuesRes.json()
+
+        metricValuesToLog = metrics.map((m: any) => {
+          const existingValue = values.find((v: any) => v.metricId === m.id)
+          return {
+            metricId: m.id,
+            label: m.label,
+            unit: m.unit,
+            value: existingValue ? existingValue.value : '',
+          }
+        })
+      }
+    } catch (e) {
+      console.error('Failed to fetch metrics or values:', e)
+    }
+
+    showLogMetrics = true
+  }
+
+  async function saveLoggedMetrics() {
+    if (!selectedCycle) return
+
+    try {
+      const response = await fetch(`/api/cycles/${selectedCycle.id}/metrics`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ metricValues: metricValuesToLog }),
+      })
+
+      if (response.ok) {
+        showLogMetrics = false
+        // Update local state to reflect changes immediately
+        const updatedValues = await response.json()
+        cycleHistory = cycleHistory.map(c => (c.id === selectedCycle.id ? { ...c, metricValues: updatedValues } : c))
+        selectedCycle = null
+        toasts.add({ message: $_('common.save'), type: 'success' })
+      }
+    } catch (e) {
+      toasts.add({ message: $_('common.error'), type: 'error' })
     }
   }
 
@@ -233,6 +296,16 @@
                   </p>
                   <p class="text-xs text-surface-500 dark:text-surface-400">max</p>
                 </div>
+                <button
+                  class="btn btn-ghost btn-icon btn-sm ml-2"
+                  on:click={() => handleLogMetrics(cycle)}
+                  aria-label={$_('exercises.metrics') || 'Métricas'}
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </button>
               </div>
 
               {#if cycle.metricValues && cycle.metricValues.length > 0}
@@ -319,3 +392,73 @@
     {/if}
   {/if}
 </div>
+
+<!-- Log Metrics Modal -->
+<Modal
+  bind:open={showLogMetrics}
+  title={$_('exercises.metrics') || 'Registrar Métricas'}
+  on:close={() => {
+    showLogMetrics = false
+    selectedCycle = null
+  }}
+>
+  {#if selectedCycle}
+    {@const exercise = $exercises.find(e => e.name === selectedCycle.exerciseName)}
+    <div class="space-y-6">
+      <div class="flex items-center gap-4 p-4 bg-surface-100 dark:bg-surface-100/50 rounded-xl">
+        <div
+          class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+          style="background-color: {exercise?.color || '#6366f1'}20;"
+        >
+          {exercise?.icon || '💪'}
+        </div>
+        <div>
+          <h3 class="font-semibold text-surface-900 dark:text-surface-900">
+            {selectedCycle.exerciseName}
+          </h3>
+          <p class="text-xs text-surface-500">
+            {new Date(selectedCycle.startDate).toLocaleDateString()}
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        {#each metricValuesToLog as mv}
+          <div>
+            <label
+              for="log-metric-{mv.metricId}"
+              class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2"
+            >
+              {mv.label}
+              {mv.unit ? `(${mv.unit})` : ''}
+            </label>
+            <input
+              id="log-metric-{mv.metricId}"
+              type="text"
+              class="input"
+              bind:value={mv.value}
+              placeholder={$_('common.value') || 'Valor'}
+            />
+          </div>
+        {/each}
+      </div>
+    </div>
+  {/if}
+
+  <svelte:fragment slot="footer">
+    <div class="flex gap-3">
+      <button
+        class="btn btn-secondary btn-md flex-1"
+        on:click={() => {
+          showLogMetrics = false
+          selectedCycle = null
+        }}
+      >
+        {$_('common.cancel')}
+      </button>
+      <button class="btn btn-primary btn-md flex-1" on:click={saveLoggedMetrics}>
+        {$_('common.save')}
+      </button>
+    </div>
+  </svelte:fragment>
+</Modal>

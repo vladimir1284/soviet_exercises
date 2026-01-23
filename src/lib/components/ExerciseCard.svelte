@@ -122,7 +122,6 @@
           </svg>
         </button>
       {/if}
-
       <button class="btn btn-ghost btn-icon btn-sm" on:click={onEdit} aria-label={$_('exercises.edit')}>
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />

@@ -112,14 +112,17 @@ export const queries = {
         SELECT COUNT(s.id) FROM sets s
         JOIN cycles c ON s.cycle_id = c.id
         WHERE c.exercise_id = e.id
-      ) as sets_count
+      ) as sets_count, (
+        SELECT COUNT(id) FROM exercise_metrics
+        WHERE exercise_id = e.id
+      ) as metrics_count
       FROM exercises e 
       WHERE e.user_id = ? 
       ORDER BY e.sort_order, e.created_at
     `,
       )
       .bind(userId)
-      .all<DbExercise>(),
+      .all<DbExercise & { metrics_count: number }>(),
 
   getExerciseById: (db: D1Database, id: number) =>
     db
@@ -189,6 +192,26 @@ export const queries = {
       .prepare('INSERT INTO cycle_metric_values (cycle_id, metric_id, value) VALUES (?, ?, ?) RETURNING *')
       .bind(cycleId, metricId, value)
       .first<DbCycleMetricValue>(),
+
+  upsertMetricValue: async (db: D1Database, cycleId: number, metricId: number, value: string) => {
+    // Check if exists
+    const existing = await db
+      .prepare('SELECT id FROM cycle_metric_values WHERE cycle_id = ? AND metric_id = ?')
+      .bind(cycleId, metricId)
+      .first<{ id: number }>()
+
+    if (existing) {
+      return db
+        .prepare('UPDATE cycle_metric_values SET value = ? WHERE id = ? RETURNING *')
+        .bind(value, existing.id)
+        .first<DbCycleMetricValue>()
+    } else {
+      return db
+        .prepare('INSERT INTO cycle_metric_values (cycle_id, metric_id, value) VALUES (?, ?, ?) RETURNING *')
+        .bind(cycleId, metricId, value)
+        .first<DbCycleMetricValue>()
+    }
+  },
 
   // Cycles
   getCyclesByExercise: (db: D1Database, exerciseId: number) =>
@@ -414,6 +437,7 @@ export function formatDbExercise(db: DbExercise) {
     isActive: toBoolean(db.is_active),
     sortOrder: db.sort_order,
     setsCount: db.sets_count || 0,
+    metricsCount: (db as any).metrics_count || 0,
   }
 }
 

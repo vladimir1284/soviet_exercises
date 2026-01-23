@@ -22,6 +22,7 @@ export interface Exercise {
   sortOrder: number
   metrics?: ExerciseMetric[]
   setsCount: number
+  metricsCount: number
 }
 
 export interface ExerciseMetric {
