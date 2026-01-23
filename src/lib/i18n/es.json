@@ -53,7 +53,10 @@
     "cycleWeeks": "Duración del ciclo (semanas)",
     "startCycle": "Iniciar ciclo",
     "active": "Activo",
-    "inactive": "Inactivo"
+    "inactive": "Inactivo",
+    "metrics": "Métricas",
+    "metricLabel": "Nombre",
+    "metricUnit": "Unidad"
   },
   "log": {
     "title": "Registrar",
@@ -121,7 +124,9 @@
     "yesterday": "Ayer",
     "week": "Semana",
     "month": "Mes",
-    "syncing": "Sincronizando"
+    "syncing": "Sincronizando",
+    "add": "Añadir",
+    "value": "Valor"
   },
   "notifications": {
     "recalibrateTitle": "¡Hora de recalibrar!",
