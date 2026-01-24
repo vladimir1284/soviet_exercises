@@ -40,7 +40,12 @@
   async function signOut() {
     if (!browser) return
 
-    const { Clerk } = await import('@clerk/clerk-js')
+    const Clerk = (window as any).Clerk
+    if (!Clerk) {
+      console.error('Clerk not found on window')
+      return
+    }
+
     const clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key')
     await clerk.load()
     await clerk.signOut()

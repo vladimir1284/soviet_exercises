@@ -18,8 +18,16 @@
     }
 
     try {
-      // Load Clerk
-      const { Clerk } = await import('@clerk/clerk-js')
+      // Wait for Clerk to be available on window (loaded from CDN)
+      let attempts = 0
+      while (!(window as any).Clerk && attempts < 50) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+        attempts++
+      }
+
+      const Clerk = (window as any).Clerk
+      if (!Clerk) throw new Error('Clerk not found on window')
+
       clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key')
 
       await clerk.load()
