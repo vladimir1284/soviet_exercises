@@ -360,7 +360,7 @@
           <span class="font-display font-bold tracking-tight">{$_('app.name')}</span>
         </div>
         <p class="text-sm text-surface-500">
-          &copy; {new Date().getFullYear()} FlexFit. {$_('landing.footerCopyright')}
+          &copy; {new Date().getFullYear()} SovietFit. {$_('landing.footerCopyright')}
         </p>
         <div class="flex gap-6">
           <a href="#" class="text-sm text-surface-500 hover:text-accent transition-colors"

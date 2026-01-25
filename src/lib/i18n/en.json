@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "FlexFit",
+    "name": "SovietFit",
     "tagline": "Your progress, set by set"
   },
   "landing": {
@@ -48,7 +48,7 @@
     "technique3Title": "Glutes",
     "technique3Desc": "Squeeze them hard to connect your upper and lower body, creating a solid structure.",
     "ctaTitle": "Ready to start?",
-    "ctaSubtitle": "Join hundreds of people already using FlexFit to track their progress and reach 100 push-ups.",
+    "ctaSubtitle": "Join hundreds of people already using SovietFit to track their progress and reach 100 push-ups.",
     "ctaGoogle": "Sign up with Google",
     "ctaEmail": "Use my Email",
     "footerCopyright": "Inspired by Baron's method.",
@@ -65,7 +65,7 @@
     "signIn": "Sign in",
     "signUp": "Sign up",
     "signOut": "Sign out",
-    "welcome": "Welcome to FlexFit",
+    "welcome": "Welcome to SovietFit",
     "welcomeBack": "Welcome back!",
     "continueWith": "Continue with {provider}",
     "orEmail": "or with email"

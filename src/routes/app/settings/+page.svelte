@@ -264,7 +264,7 @@
       </div>
 
       <a
-        href="mailto:feedback@flexfit.app"
+        href="mailto:feedback@sovietfit.app"
         class="block p-4 text-sm text-surface-700 dark:text-surface-700 hover:bg-surface-100/50 transition-colors"
       >
         {$_('settings.feedback')}
@@ -282,7 +282,7 @@
   <!-- Footer -->
   <footer class="text-center py-8">
     <p class="text-xs text-surface-400 dark:text-surface-500">
-      FlexFit &copy; {new Date().getFullYear()}
+      SovietFit &copy; {new Date().getFullYear()}
     </p>
     <p class="text-xs text-surface-400 dark:text-surface-500 mt-1">Made with 💪 for fitness enthusiasts</p>
   </footer>

@@ -1,4 +1,4 @@
-# FlexFit 💪
+# SovietFit 💪
 
 A progressive exercise tracking app built with SvelteKit and deployed on Cloudflare Pages.
 
@@ -35,7 +35,7 @@ A progressive exercise tracking app built with SvelteKit and deployed on Cloudfl
 
    ```bash
    git clone <repo>
-   cd flexfit
+   cd sovietfit
    npm install
    ```
 
@@ -51,7 +51,7 @@ A progressive exercise tracking app built with SvelteKit and deployed on Cloudfl
    npx wrangler login
 
    # Create the database
-   npx wrangler d1 create flexfit-db
+   npx wrangler d1 create sovietfit-db
 
    # Copy the database_id to wrangler.toml
    ```
@@ -78,7 +78,7 @@ A progressive exercise tracking app built with SvelteKit and deployed on Cloudfl
    ```toml
    [[d1_databases]]
    binding = "DB"
-   database_name = "flexfit-db"
+   database_name = "sovietfit-db"
    database_id = "YOUR_DATABASE_ID_HERE"
 
    [vars]
@@ -100,7 +100,7 @@ npm run deploy
 ## Project Structure
 
 ```
-flexfit/
+sovietfit/
 ├── src/
 │   ├── lib/
 │   │   ├── components/    # Reusable UI components

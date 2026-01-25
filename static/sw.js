@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_NAME = 'flexfit-v1'
+const CACHE_NAME = 'sovietfit-v1'
 const STATIC_ASSETS = ['/', '/manifest.json']
 
 // Install event - cache static assets

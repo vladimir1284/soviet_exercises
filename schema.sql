@@ -1,4 +1,4 @@
--- FlexFit Database Schema
+-- SovietFit Database Schema
 -- Cloudflare D1 (SQLite)
 
 -- Users table (linked to Clerk)

@@ -1,5 +1,5 @@
 {
-  "name": "flexfit",
+  "name": "sovietfit",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -8,8 +8,8 @@
     "build": "vite build",
     "preview": "wrangler pages dev .svelte-kit/cloudflare",
     "deploy": "npm run build && wrangler pages deploy .svelte-kit/cloudflare",
-    "db:migrate": "wrangler d1 execute flexfit-db --file=./schema.sql",
-    "db:migrate:local": "wrangler d1 execute flexfit-db --local --file=./schema.sql"
+    "db:migrate": "wrangler d1 execute sovietfit-db --file=./schema.sql",
+    "db:migrate:local": "wrangler d1 execute sovietfit-db --local --file=./schema.sql"
   },
   "devDependencies": {
     "@sveltejs/adapter-cloudflare": "^4.0.0",

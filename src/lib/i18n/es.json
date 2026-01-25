@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "FlexFit",
+    "name": "SovietFit",
     "tagline": "Tu progreso, tanda a tanda"
   },
   "landing": {
@@ -48,7 +48,7 @@
     "technique3Title": "Glúteos",
     "technique3Desc": "Apriétalos fuerte para conectar el tren superior con el inferior, creando una estructura sólida.",
     "ctaTitle": "¿Listo para empezar?",
-    "ctaSubtitle": "Únete a cientos de personas que ya están usando FlexFit para registrar su progreso y alcanzar las 100 flexiones.",
+    "ctaSubtitle": "Únete a cientos de personas que ya están usando SovietFit para registrar su progreso y alcanzar las 100 flexiones.",
     "ctaGoogle": "Registrarme con Google",
     "ctaEmail": "Usar mi Email",
     "footerCopyright": "Inspirado por el método de Baron.",
@@ -65,7 +65,7 @@
     "signIn": "Iniciar sesión",
     "signUp": "Crear cuenta",
     "signOut": "Cerrar sesión",
-    "welcome": "Bienvenido a FlexFit",
+    "welcome": "Bienvenido a SovietFit",
     "welcomeBack": "¡Bienvenido de nuevo!",
     "continueWith": "Continuar con {provider}",
     "orEmail": "o con tu email"

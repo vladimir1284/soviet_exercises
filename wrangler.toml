@@ -1,10 +1,10 @@
-name = "flexfit"
+name = "sovietfit"
 compatibility_date = "2024-01-01"
 pages_build_output_dir = ".svelte-kit/cloudflare"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "flexfit-db"
+database_name = "sovietfit-db"
 database_id = "4c362aa3-3e4f-4434-884f-ae1d810a0462"
 remote = true # <-- This enables remote connection
 

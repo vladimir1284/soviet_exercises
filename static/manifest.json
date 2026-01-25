@@ -1,6 +1,6 @@
 {
-  "name": "FlexFit",
-  "short_name": "FlexFit",
+  "name": "SovietFit",
+  "short_name": "SovietFit",
   "description": "Track your exercise progress with personalized training cycles",
   "start_url": "/",
   "display": "standalone",
