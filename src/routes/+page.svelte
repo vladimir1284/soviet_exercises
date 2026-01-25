@@ -70,152 +70,346 @@
 </script>
 
 <svelte:head>
-  <title>{$_('app.name')} - {$_('app.tagline')}</title>
+  <title>{$_('app.name')} - {$_('landing.title')}</title>
 </svelte:head>
 
 <div
-  class="min-h-screen flex flex-col bg-gradient-to-br from-surface-100 via-surface-50 to-indigo-50 dark:from-surface-950 dark:via-surface-950 dark:to-indigo-950/30"
+  class="min-h-screen bg-surface-50 dark:bg-surface-950 text-surface-900 dark:text-surface-100 selection:bg-accent/30"
 >
-  <!-- Decorative elements -->
-  <div class="absolute inset-0 overflow-hidden pointer-events-none">
-    <div class="absolute -top-40 -right-40 w-80 h-80 bg-accent/10 rounded-full blur-3xl" />
-    <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl" />
-  </div>
-
-  <main class="flex-1 flex flex-col items-center justify-center px-6 py-12 relative">
-    {#if isLoading}
-      <div class="animate-pulse flex flex-col items-center gap-4">
-        <div class="w-20 h-20 bg-surface-200 dark:bg-surface-200 rounded-2xl" />
-        <div class="w-32 h-6 bg-surface-200 dark:bg-surface-200 rounded-lg" />
-      </div>
-    {:else}
-      <!-- Logo & Title -->
-      <div class="text-center mb-12 animate-fade-in">
+  <!-- Navigation -->
+  <nav
+    class="fixed top-0 w-full z-50 bg-surface-50/80 dark:bg-surface-950/80 backdrop-blur-md border-b border-surface-200 dark:border-surface-800"
+  >
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
         <div
-          class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-accent to-purple-600 rounded-3xl flex items-center justify-center shadow-lg shadow-accent/30 rotate-3 hover:rotate-0 transition-transform duration-300"
+          class="w-8 h-8 bg-gradient-to-br from-accent to-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-accent/20"
         >
-          <span class="text-5xl">💪</span>
+          <span class="text-xl">💪</span>
         </div>
-        <h1 class="font-display font-bold text-4xl text-surface-900 dark:text-surface-900 mb-2">
-          {$_('app.name')}
-        </h1>
-        <p class="text-surface-500 dark:text-surface-400 text-lg">
-          {$_('app.tagline')}
-        </p>
+        <span class="font-display font-bold text-xl tracking-tight">{$_('app.name')}</span>
       </div>
-
-      <!-- Auth buttons -->
-      <div class="w-full max-w-sm space-y-4 animate-slide-up" style="animation-delay: 0.1s;">
-        <button
-          class="w-full btn btn-lg bg-white dark:bg-surface-100 text-surface-900 dark:text-surface-900 border border-surface-200 dark:border-surface-200/50 hover:bg-surface-50 dark:hover:bg-surface-200 shadow-soft"
-          on:click={signInWithGoogle}
-        >
-          <svg class="w-5 h-5" viewBox="0 0 24 24">
-            <path
-              fill="#4285F4"
-              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-            />
-            <path
-              fill="#EA4335"
-              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-            />
-          </svg>
-          {$_('auth.continueWith', { values: { provider: 'Google' } })}
-        </button>
-
-        <div class="relative">
-          <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-surface-200 dark:border-surface-200/30" />
-          </div>
-          <div class="relative flex justify-center text-sm">
-            <span
-              class="px-4 bg-gradient-to-br from-surface-100 via-surface-50 to-indigo-50 dark:from-surface-950 dark:via-surface-950 dark:to-indigo-950/30 text-surface-400"
-            >
-              {$_('auth.orEmail')}
-            </span>
-          </div>
-        </div>
-
-        <button class="w-full btn btn-primary btn-lg" on:click={signInWithEmail}>
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="4" width="20" height="16" rx="2" />
-            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-          </svg>
+      <div class="flex items-center gap-4">
+        <button on:click={signInWithEmail} class="text-sm font-medium hover:text-accent transition-colors">
           {$_('auth.signIn')}
         </button>
+        <button on:click={signInWithGoogle} class="btn btn-primary btn-sm">{$_('landing.startNow')}</button>
       </div>
+    </div>
+  </nav>
 
-      <!-- Features preview -->
-      <div class="mt-16 grid grid-cols-3 gap-6 text-center animate-slide-up" style="animation-delay: 0.2s;">
-        <div class="space-y-2">
-          <div class="w-12 h-12 mx-auto bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-            <svg
-              class="w-6 h-6 text-green-600 dark:text-green-400"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-            </svg>
-          </div>
-          <p class="text-xs text-surface-500 dark:text-surface-400 font-medium">
-            {$_('stats.progress')}
-          </p>
+  {#if isLoading}
+    <div class="min-h-screen flex items-center justify-center">
+      <div class="animate-pulse flex flex-col items-center gap-4">
+        <div class="w-20 h-20 bg-surface-200 dark:bg-surface-800 rounded-2xl" />
+        <div class="w-32 h-6 bg-surface-200 dark:bg-surface-800 rounded-lg" />
+      </div>
+    </div>
+  {:else}
+    <main>
+      <!-- Hero Section -->
+      <section class="relative pt-32 pb-20 px-6 overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none">
+          <div class="absolute -top-24 -right-24 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse" />
+          <div class="absolute top-1/2 -left-24 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl" />
         </div>
-        <div class="space-y-2">
-          <div class="w-12 h-12 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-            <svg
-              class="w-6 h-6 text-blue-600 dark:text-blue-400"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-          </div>
-          <p class="text-xs text-surface-500 dark:text-surface-400 font-medium">
-            {$_('exercises.configure')}
-          </p>
-        </div>
-        <div class="space-y-2">
+
+        <div class="max-w-4xl mx-auto text-center relative z-10">
           <div
-            class="w-12 h-12 mx-auto bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center"
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-wider mb-6 animate-fade-in"
           >
-            <svg
-              class="w-6 h-6 text-purple-600 dark:text-purple-400"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M12 20V10" />
-              <path d="M18 20V4" />
-              <path d="M6 20v-4" />
-            </svg>
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+            </span>
+            {$_('landing.badge')}
           </div>
-          <p class="text-xs text-surface-500 dark:text-surface-400 font-medium">
-            {$_('stats.title')}
+          <h1 class="font-display font-black text-5xl md:text-7xl mb-6 leading-tight animate-slide-up">
+            {$_('landing.heroTitle')}
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-purple-600"
+              >{$_('landing.heroHighlight')}</span
+            >
+            {$_('landing.heroTitleEnd')}
+          </h1>
+          <p
+            class="text-xl text-surface-500 dark:text-surface-400 mb-10 max-w-2xl mx-auto animate-slide-up"
+            style="animation-delay: 0.1s;"
+          >
+            {$_('landing.heroSubtitle')}
           </p>
+          <div
+            class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up"
+            style="animation-delay: 0.2s;"
+          >
+            <button
+              on:click={signInWithGoogle}
+              class="btn btn-primary btn-xl w-full sm:w-auto shadow-xl shadow-accent/20"
+            >
+              {$_('landing.heroCta')}
+            </button>
+            <a href="#metodo" class="text-sm font-semibold hover:text-accent transition-colors">
+              {$_('landing.learnMore')}
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- The Method Section -->
+      <section id="metodo" class="py-24 px-6 bg-surface-100/50 dark:bg-surface-900/30">
+        <div class="max-w-5xl mx-auto">
+          <div class="grid md:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 class="font-display font-bold text-3xl md:text-4xl mb-6">{$_('landing.methodTitle')}</h2>
+              <div class="space-y-4 text-surface-600 dark:text-surface-400 text-lg">
+                <p>
+                  {$_('landing.methodP1')} <strong>{$_('landing.methodP1Strong')}</strong>.
+                </p>
+                <p>
+                  {$_('landing.methodP2')}
+                  <em class="text-surface-900 dark:text-surface-100">"{$_('landing.methodP2Quote')}"</em>.
+                </p>
+                <p>
+                  {$_('landing.methodP3')}
+                </p>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div
+                class="p-6 bg-white dark:bg-surface-800 rounded-3xl shadow-soft border border-surface-200 dark:border-surface-700 transform hover:-translate-y-1 transition-transform"
+              >
+                <div class="text-3xl mb-4">🧠</div>
+                <h3 class="font-bold mb-2">{$_('landing.card1Title')}</h3>
+                <p class="text-sm text-surface-500">{$_('landing.card1Desc')}</p>
+              </div>
+              <div
+                class="p-6 bg-white dark:bg-surface-800 rounded-3xl shadow-soft border border-surface-200 dark:border-surface-700 mt-8 transform hover:-translate-y-1 transition-transform"
+              >
+                <div class="text-3xl mb-4">⚡</div>
+                <h3 class="font-bold mb-2">{$_('landing.card2Title')}</h3>
+                <p class="text-sm text-surface-500">{$_('landing.card2Desc')}</p>
+              </div>
+              <div
+                class="p-6 bg-white dark:bg-surface-800 rounded-3xl shadow-soft border border-surface-200 dark:border-surface-700 transform hover:-translate-y-1 transition-transform"
+              >
+                <div class="text-3xl mb-4">📈</div>
+                <h3 class="font-bold mb-2">{$_('landing.card3Title')}</h3>
+                <p class="text-sm text-surface-500">{$_('landing.card3Desc')}</p>
+              </div>
+              <div
+                class="p-6 bg-white dark:bg-surface-800 rounded-3xl shadow-soft border border-surface-200 dark:border-surface-700 mt-8 transform hover:-translate-y-1 transition-transform"
+              >
+                <div class="text-3xl mb-4">🎯</div>
+                <h3 class="font-bold mb-2">{$_('landing.card4Title')}</h3>
+                <p class="text-sm text-surface-500">{$_('landing.card4Desc')}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- The Protocol Section -->
+      <section class="py-24 px-6">
+        <div class="max-w-4xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="font-display font-bold text-3xl md:text-4xl mb-4">{$_('landing.protocolTitle')}</h2>
+            <p class="text-surface-500">{$_('landing.protocolSubtitle')}</p>
+          </div>
+
+          <div class="space-y-12">
+            <div class="flex gap-6 items-start">
+              <div
+                class="flex-shrink-0 w-12 h-12 bg-accent text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg shadow-accent/30"
+              >
+                1
+              </div>
+              <div>
+                <h3 class="font-display font-bold text-2xl mb-2">{$_('landing.step1Title')}</h3>
+                <p class="text-surface-600 dark:text-surface-400">
+                  {$_('landing.step1Desc')}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-6 items-start">
+              <div
+                class="flex-shrink-0 w-12 h-12 bg-accent text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg shadow-accent/30"
+              >
+                2
+              </div>
+              <div>
+                <h3 class="font-display font-bold text-2xl mb-2">{$_('landing.step2Title')}</h3>
+                <p class="text-surface-600 dark:text-surface-400">
+                  {$_('landing.step2Desc')}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-6 items-start">
+              <div
+                class="flex-shrink-0 w-12 h-12 bg-accent text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg shadow-accent/30"
+              >
+                3
+              </div>
+              <div>
+                <h3 class="font-display font-bold text-2xl mb-2">{$_('landing.step3Title')}</h3>
+                <p class="text-surface-600 dark:text-surface-400">
+                  {$_('landing.step3Desc')} <strong>{$_('landing.step3Strong')}</strong>
+                  {$_('landing.step3DescEnd')}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-6 items-start">
+              <div
+                class="flex-shrink-0 w-12 h-12 bg-accent text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg shadow-accent/30"
+              >
+                4
+              </div>
+              <div>
+                <h3 class="font-display font-bold text-2xl mb-2">{$_('landing.step4Title')}</h3>
+                <p class="text-surface-600 dark:text-surface-400">
+                  {$_('landing.step4Desc')}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Technique Section -->
+      <section class="py-24 px-6 bg-surface-900 text-white overflow-hidden relative">
+        <div class="absolute inset-0 opacity-20">
+          <div
+            class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-accent/20 via-transparent to-transparent"
+          />
+        </div>
+
+        <div class="max-w-5xl mx-auto relative z-10">
+          <div class="text-center mb-16">
+            <h2 class="font-display font-bold text-3xl md:text-4xl mb-4">{$_('landing.techniqueTitle')}</h2>
+            <p class="text-surface-400">{$_('landing.techniqueSubtitle')}</p>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-8">
+            <div class="p-8 bg-surface-800/50 backdrop-blur-sm rounded-3xl border border-surface-700">
+              <div class="w-14 h-14 bg-accent/20 rounded-2xl flex items-center justify-center mb-6">
+                <span class="text-3xl">👐</span>
+              </div>
+              <h3 class="font-bold text-xl mb-3">{$_('landing.technique1Title')}</h3>
+              <p class="text-surface-400">
+                {$_('landing.technique1Desc')}
+              </p>
+            </div>
+
+            <div class="p-8 bg-surface-800/50 backdrop-blur-sm rounded-3xl border border-surface-700">
+              <div class="w-14 h-14 bg-accent/20 rounded-2xl flex items-center justify-center mb-6">
+                <span class="text-3xl">🛡️</span>
+              </div>
+              <h3 class="font-bold text-xl mb-3">{$_('landing.technique2Title')}</h3>
+              <p class="text-surface-400">
+                {$_('landing.technique2Desc')}
+              </p>
+            </div>
+
+            <div class="p-8 bg-surface-800/50 backdrop-blur-sm rounded-3xl border border-surface-700">
+              <div class="w-14 h-14 bg-accent/20 rounded-2xl flex items-center justify-center mb-6">
+                <span class="text-3xl">🍑</span>
+              </div>
+              <h3 class="font-bold text-xl mb-3">{$_('landing.technique3Title')}</h3>
+              <p class="text-surface-400">
+                {$_('landing.technique3Desc')}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Final CTA -->
+      <section class="py-24 px-6 text-center">
+        <div
+          class="max-w-3xl mx-auto p-12 bg-gradient-to-br from-accent to-purple-600 rounded-[3rem] text-white shadow-2xl shadow-accent/40"
+        >
+          <h2 class="font-display font-bold text-4xl mb-6">{$_('landing.ctaTitle')}</h2>
+          <p class="text-xl mb-10 opacity-90">
+            {$_('landing.ctaSubtitle')}
+          </p>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              on:click={signInWithGoogle}
+              class="btn bg-white text-accent hover:bg-surface-50 btn-xl w-full sm:w-auto"
+            >
+              {$_('landing.ctaGoogle')}
+            </button>
+            <button
+              on:click={signInWithEmail}
+              class="btn bg-accent-dark text-white hover:bg-accent-dark/80 btn-xl w-full sm:w-auto"
+            >
+              {$_('landing.ctaEmail')}
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="py-12 px-6 border-t border-surface-200 dark:border-surface-800">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-accent rounded flex items-center justify-center">
+            <span class="text-xs">💪</span>
+          </div>
+          <span class="font-display font-bold tracking-tight">{$_('app.name')}</span>
+        </div>
+        <p class="text-sm text-surface-500">
+          &copy; {new Date().getFullYear()} FlexFit. {$_('landing.footerCopyright')}
+        </p>
+        <div class="flex gap-6">
+          <a href="#" class="text-sm text-surface-500 hover:text-accent transition-colors"
+            >{$_('landing.footerPrivacy')}</a
+          >
+          <a href="#" class="text-sm text-surface-500 hover:text-accent transition-colors"
+            >{$_('landing.footerTerms')}</a
+          >
         </div>
       </div>
-    {/if}
-  </main>
-
-  <!-- Footer -->
-  <footer class="py-6 text-center text-xs text-surface-400 dark:text-surface-500 relative">
-    <p>FlexFit &copy; {new Date().getFullYear()}</p>
-  </footer>
+    </footer>
+  {/if}
 </div>
+
+<style>
+  :global(html) {
+    scroll-behavior: smooth;
+  }
+
+  .btn-xl {
+    @apply px-8 py-4 text-lg font-bold rounded-2xl transition-all duration-300 active:scale-95;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.8s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    opacity: 0;
+    animation: slide-up 0.8s ease-out forwards;
+  }
+</style>
