@@ -5,7 +5,6 @@
   import { goto } from '$app/navigation'
   import { user, isOnline } from '$stores'
 
-  let clerk: any = null
   let isLoading = true
 
   onMount(async () => {
@@ -26,10 +25,12 @@
       }
 
       const Clerk = (window as any).Clerk
-      if (!Clerk) throw new Error('Clerk not found on window')
+      if (!Clerk) {
+        isLoading = false
+        return
+      }
 
-      clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key')
-
+      const clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key')
       await clerk.load()
 
       if (clerk.user) {
@@ -48,24 +49,8 @@
     isLoading = false
   })
 
-  async function signInWithGoogle() {
-    if (!clerk) return
-    await clerk.openSignIn({
-      redirectUrl: '/app',
-      appearance: {
-        elements: {
-          rootBox: 'mx-auto',
-          card: 'shadow-none',
-        },
-      },
-    })
-  }
-
-  async function signInWithEmail() {
-    if (!clerk) return
-    await clerk.openSignIn({
-      redirectUrl: '/app',
-    })
+  function goToSignIn() {
+    goto('/signin')
   }
 </script>
 
@@ -90,10 +75,10 @@
         <span class="font-display font-bold text-xl tracking-tight">{$_('app.name')}</span>
       </div>
       <div class="flex items-center gap-4">
-        <button on:click={signInWithEmail} class="text-sm font-medium hover:text-accent transition-colors">
+        <a href="/signin" class="text-sm font-medium hover:text-accent transition-colors">
           {$_('auth.signIn')}
-        </button>
-        <button on:click={signInWithGoogle} class="btn btn-primary btn-sm">{$_('landing.startNow')}</button>
+        </a>
+        <a href="/signin" class="btn btn-primary btn-sm">{$_('landing.startNow')}</a>
       </div>
     </div>
   </nav>
@@ -141,12 +126,9 @@
             class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up"
             style="animation-delay: 0.2s;"
           >
-            <button
-              on:click={signInWithGoogle}
-              class="btn btn-primary btn-xl w-full sm:w-auto shadow-xl shadow-accent/20"
-            >
+            <a href="/signin" class="btn btn-primary btn-xl w-full sm:w-auto shadow-xl shadow-accent/20">
               {$_('landing.heroCta')}
-            </button>
+            </a>
             <a href="#metodo" class="text-sm font-semibold hover:text-accent transition-colors">
               {$_('landing.learnMore')}
             </a>
@@ -334,18 +316,12 @@
             {$_('landing.ctaSubtitle')}
           </p>
           <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              on:click={signInWithGoogle}
-              class="btn bg-white text-accent hover:bg-surface-50 btn-xl w-full sm:w-auto"
-            >
+            <a href="/signin" class="btn bg-white text-accent hover:bg-surface-50 btn-xl w-full sm:w-auto">
               {$_('landing.ctaGoogle')}
-            </button>
-            <button
-              on:click={signInWithEmail}
-              class="btn bg-accent-dark text-white hover:bg-accent-dark/80 btn-xl w-full sm:w-auto"
-            >
+            </a>
+            <a href="/signin" class="btn bg-accent-dark text-white hover:bg-accent-dark/80 btn-xl w-full sm:w-auto">
               {$_('landing.ctaEmail')}
-            </button>
+            </a>
           </div>
         </div>
       </section>
