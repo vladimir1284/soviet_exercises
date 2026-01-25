@@ -31,10 +31,8 @@
 
         const Clerk = (window as any).Clerk
         if (!Clerk) throw new Error('Clerk not found on window')
-
-        const instance = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key')
-        await instance.load()
-        return instance
+        await Clerk.load()
+        return Clerk
       })()
 
       // Timeout after 5 seconds
