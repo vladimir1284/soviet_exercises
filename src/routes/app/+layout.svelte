@@ -4,7 +4,7 @@
   import { goto } from '$app/navigation'
   import { _ } from 'svelte-i18n'
   import { BottomNav } from '$components'
-  import { user, exercises, cycles, todaySets, settings, isLoading } from '$stores'
+  import { user, exercises, cycles, todaySets, settings, isLoading, clerkInstance } from '$stores'
   import { getLocalDateString } from '$lib/utils/date'
 
   let clerk: any = null
@@ -41,6 +41,7 @@
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Clerk load timeout')), 5000))
 
       clerk = (await Promise.race([clerkPromise, timeoutPromise])) as any
+      clerkInstance.set(clerk)
 
       if (!clerk.user) {
         // If no clerk user but we have a cached user, we might be offline or session expired

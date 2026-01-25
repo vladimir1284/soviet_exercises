@@ -306,6 +306,9 @@ function createToastStore() {
 
 export const toasts = createToastStore()
 
+// Clerk instance store
+export const clerkInstance = writable<any>(null)
+
 // Clear all data on logout
 export function clearAllData() {
   user.reset()

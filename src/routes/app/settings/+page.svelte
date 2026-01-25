@@ -1,7 +1,7 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
   import { locale, locales, localeNames } from '$lib/i18n'
-  import { user, theme, settings, toasts, clearAllData } from '$stores'
+  import { user, theme, settings, toasts, clearAllData, clerkInstance } from '$stores'
   import { browser } from '$app/environment'
   import { goto } from '$app/navigation'
 
@@ -40,17 +40,16 @@
   async function signOut() {
     if (!browser) return
 
-    const Clerk = (window as any).Clerk
-    if (!Clerk) {
-      console.error('Clerk not found on window')
-      return
+    try {
+      if ($clerkInstance) {
+        await $clerkInstance.signOut()
+      }
+    } catch (e) {
+      console.error('Sign out failed:', e)
     }
 
-    const clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_your_key')
-    await clerk.load()
-    await clerk.signOut()
-
     clearAllData()
+    clerkInstance.set(null)
     goto('/')
   }
 
