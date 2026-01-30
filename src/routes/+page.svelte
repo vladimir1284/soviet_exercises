@@ -89,28 +89,17 @@
         <div class="w-32 h-6 bg-surface-200 dark:bg-surface-800 rounded-lg" />
       </div>
     {:else}
-      <!-- Back to home link -->
-      <a
-        href="/"
-        class="absolute top-6 left-6 flex items-center gap-2 text-surface-500 hover:text-accent transition-colors"
-      >
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-        <span class="text-sm font-medium">{$_('common.back') || 'Back'}</span>
-      </a>
-
       <!-- Logo & Title -->
       <div class="text-center mb-12 animate-fade-in">
         <div
           class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-accent to-purple-600 rounded-3xl flex items-center justify-center shadow-lg shadow-accent/30 rotate-3 hover:rotate-0 transition-transform duration-300"
         >
-          <span class="text-5xl">💪</span>
+          <img src="/icons/icon.svg" alt="" class="w-24 h-24 inline-block" />
         </div>
         <h1 class="font-display font-bold text-4xl text-surface-900 dark:text-surface-100 mb-2">
           {$_('app.name')}
         </h1>
-        <p class="text-surface-500 dark:text-surface-400 text-lg">
+        <p class="text-surface-600 dark:text-surface-300 text-lg">
           {$_('app.tagline')}
         </p>
       </div>
@@ -148,7 +137,7 @@
           </div>
           <div class="relative flex justify-center text-sm">
             <span
-              class="px-4 bg-gradient-to-br from-surface-100 via-surface-50 to-indigo-50 dark:from-surface-950 dark:via-surface-950 dark:to-indigo-950/30 text-surface-400"
+              class="px-4 bg-gradient-to-br from-surface-100 via-surface-50 to-indigo-50 dark:from-surface-950 dark:via-surface-950 dark:to-indigo-950/30 text-surface-600 dark:text-surface-400"
             >
               {$_('auth.orEmail')}
             </span>
@@ -178,7 +167,7 @@
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
             </svg>
           </div>
-          <p class="text-xs text-surface-500 dark:text-surface-400 font-medium">
+          <p class="text-xs text-surface-700 dark:text-surface-200 font-medium">
             {$_('stats.progress')}
           </p>
         </div>
@@ -197,7 +186,7 @@
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           </div>
-          <p class="text-xs text-surface-500 dark:text-surface-400 font-medium">
+          <p class="text-xs text-surface-700 dark:text-surface-200 font-medium">
             {$_('exercises.configure')}
           </p>
         </div>
@@ -217,7 +206,7 @@
               <path d="M6 20v-4" />
             </svg>
           </div>
-          <p class="text-xs text-surface-500 dark:text-surface-400 font-medium">
+          <p class="text-xs text-surface-700 dark:text-surface-200 font-medium">
             {$_('stats.title')}
           </p>
         </div>
@@ -226,7 +215,7 @@
   </main>
 
   <!-- Footer -->
-  <footer class="py-6 text-center text-xs text-surface-400 dark:text-surface-500 relative">
+  <footer class="py-6 text-center text-xs text-surface-600 dark:text-surface-900 relative">
     <p>{$_('app.name')} &copy; {new Date().getFullYear()}</p>
   </footer>
 </div>
