@@ -75,6 +75,44 @@
       }
     }
 
+    // Date change detection
+    let lastCheckedDate = getLocalDateString()
+
+    const checkDate = async () => {
+      const currentDate = getLocalDateString()
+      if (currentDate !== lastCheckedDate) {
+        console.log('Date changed from', lastCheckedDate, 'to', currentDate)
+        lastCheckedDate = currentDate
+
+        // If we have an active user, we need to refresh the day's data
+        if ($user) {
+          // Clear today's sets as it's a new day
+          todaySets.set([])
+
+          if (navigator.onLine && clerk?.user) {
+            // If online, try to fetch fresh data
+            await loadUserData()
+          }
+        }
+      }
+    }
+
+    // Check every minute
+    const interval = setInterval(checkDate, 60000)
+
+    // Check when app becomes visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkDate()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+
     isLoading.set(false)
   })
 
