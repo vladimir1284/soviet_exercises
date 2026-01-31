@@ -159,6 +159,7 @@ async function calculateStreaks(
   let bestStreak = 0
   let tempStreak = 0
   let prevDate: Date | null = null
+  let isCurrentStreakActive = false
 
   const today = new Date(localDate + 'T12:00:00')
   today.setHours(0, 0, 0, 0)
@@ -173,19 +174,22 @@ async function calculateStreaks(
       if (diffFromToday <= 1) {
         tempStreak = 1
         currentStreak = 1
+        isCurrentStreakActive = true
       } else {
         tempStreak = 1
+        isCurrentStreakActive = false
       }
     } else {
       const diff = Math.floor((prevDate.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
       if (diff === 1) {
         tempStreak++
-        if (currentStreak > 0) {
+        if (isCurrentStreakActive) {
           currentStreak = tempStreak
         }
       } else {
         bestStreak = Math.max(bestStreak, tempStreak)
         tempStreak = 1
+        isCurrentStreakActive = false
       }
     }
 
