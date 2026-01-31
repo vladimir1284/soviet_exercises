@@ -108,12 +108,12 @@
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
+    isLoading.set(false)
+
     return () => {
       clearInterval(interval)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-
-    isLoading.set(false)
   })
 
   async function loadUserData() {
