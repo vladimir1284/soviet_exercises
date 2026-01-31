@@ -43,6 +43,7 @@ export interface DbCycle {
 export interface DbSet {
   id: number
   cycle_id: number
+  exercise_id?: number
   reps_completed: number
   completed_at: string
   edited_at: string | null
@@ -280,7 +281,11 @@ export const queries = {
     const result = await db
       .prepare(
         `
-      SELECT s.* FROM sets s
+      SELECT 
+        s.id, s.cycle_id, s.reps_completed, s.completed_at, s.edited_at, 
+        s.day_number, s.set_number, s.notes, s.created_at,
+        c.exercise_id 
+      FROM sets s
       JOIN cycles c ON s.cycle_id = c.id
       JOIN exercises e ON c.exercise_id = e.id
       WHERE e.user_id = ? AND DATE(s.completed_at${offsetModifier}) = ?
@@ -461,6 +466,7 @@ export function formatDbSet(db: DbSet) {
   return {
     id: db.id,
     cycleId: db.cycle_id,
+    exerciseId: db.exercise_id,
     repsCompleted: db.reps_completed,
     completedAt: db.completed_at,
     editedAt: db.edited_at,

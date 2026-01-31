@@ -37,12 +37,28 @@ export const GET: RequestHandler = async ({ url, platform }) => {
     return json({ error: 'Database not available' }, { status: 500 })
   }
 
-  const cycleId = url.searchParams.get('cycleId')
-  if (!cycleId) {
-    return json({ error: 'Cycle ID required' }, { status: 400 })
-  }
-
   try {
+    const userId = url.searchParams.get('userId')
+    const date = url.searchParams.get('date')
+    const timezoneOffset = url.searchParams.get('timezoneOffset')
+
+    if (userId && date) {
+      // Get sets for specific date
+      const result = await queries.getTodaySetsByUser(
+        db,
+        parseInt(userId),
+        date,
+        timezoneOffset ? parseInt(timezoneOffset) : undefined,
+      )
+      const sets = (result.results || []).map(formatDbSet)
+      return json(sets)
+    }
+
+    const cycleId = url.searchParams.get('cycleId')
+    if (!cycleId) {
+      return json({ error: 'Cycle ID or User ID + Date required' }, { status: 400 })
+    }
+
     const result = await queries.getSetsByCycle(db, parseInt(cycleId))
     const sets = (result.results || []).map(formatDbSet)
     return json(sets)

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { _, locale } from 'svelte-i18n'
   import { onMount } from 'svelte'
+  import { goto } from '$app/navigation'
   import { ProgressRing, Modal } from '$components'
   import { user, exercises, cycles, toasts } from '$stores'
   import { getLocalDateString, parseLocalDate } from '$lib/utils/date'
@@ -21,6 +22,7 @@
     maxReps: number
     startDate: string
     endDate: string
+    metricValues?: { label: string; value: string; unit: string | null }[]
   }[] = []
   let isLoading = true
 
@@ -238,7 +240,10 @@
         <div class="flex items-end justify-between gap-2 h-32">
           {#each weekStats as day}
             {@const height = (day.sets / maxSets) * 100}
-            <div class="flex-1 flex flex-col items-center gap-2">
+            <button
+              class="flex-1 flex flex-col items-center gap-2 hover:bg-surface-100 dark:hover:bg-surface-800/50 rounded-lg py-1 transition-colors"
+              on:click={() => goto(`/app/log?date=${day.date}`)}
+            >
               <div class="w-full flex flex-col items-center justify-end h-24">
                 <span class="text-xs font-medium text-surface-600 dark:text-surface-500 mb-1">
                   {day.sets}
@@ -255,7 +260,7 @@
               >
                 {getDayName(day.date)}
               </span>
-            </div>
+            </button>
           {/each}
         </div>
       {:else}

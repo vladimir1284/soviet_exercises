@@ -1,9 +1,20 @@
 <script lang="ts">
   import { _, locale } from 'svelte-i18n'
   import { ProgressRing, Modal } from '$components'
-  import { exercises, cycles, todaySets, todayProgress, toasts, isOnline, pendingSets, allTodaySets } from '$stores'
+  import { page } from '$app/stores'
+  import {
+    exercises,
+    cycles,
+    todaySets,
+    todayProgress,
+    toasts,
+    isOnline,
+    pendingSets,
+    allTodaySets,
+    user,
+  } from '$stores'
   import type { Exercise, Cycle, SetLog } from '$stores'
-  import { getLocalISOString } from '$lib/utils/date'
+  import { getLocalISOString, getLocalDateString } from '$lib/utils/date'
 
   // Selected exercise
   let selectedExerciseId: number | null = null
@@ -13,6 +24,34 @@
   let editingSet: SetLog | null = null
   let editTime = ''
   let editNotes = ''
+
+  // Date navigation
+  $: dateParam = $page.url.searchParams.get('date')
+  $: isHistorical = !!dateParam && dateParam !== getLocalDateString()
+  $: viewDate = dateParam || getLocalDateString()
+
+  let historicalSets: SetLog[] = []
+  let isLoadingHistory = false
+
+  $: if (isHistorical && $user?.id) {
+    loadHistoricalSets(viewDate)
+  }
+
+  async function loadHistoricalSets(date: string) {
+    isLoadingHistory = true
+    try {
+      const offset = -new Date().getTimezoneOffset()
+      // @ts-ignore
+      const res = await fetch(`/api/sets?userId=${$user.id}&date=${date}&timezoneOffset=${offset}`)
+      if (res.ok) {
+        historicalSets = await res.json()
+      }
+    } catch (e) {
+      console.error('Failed to load history:', e)
+    } finally {
+      isLoadingHistory = false
+    }
+  }
 
   // Get active exercises with cycles
   $: activeExercises = $exercises.filter(e => {
@@ -30,7 +69,13 @@
   $: selectedCycle = selectedExerciseId ? $cycles.find(c => c.exerciseId === selectedExerciseId && c.isActive) : null
 
   // Get today's sets for selected exercise (including pending)
-  $: exerciseSets = selectedCycle ? $allTodaySets.filter(s => s.cycleId === selectedCycle.id) : []
+  $: sourceSets = isHistorical ? historicalSets : $allTodaySets
+  $: exerciseSets =
+    isHistorical && selectedExerciseId
+      ? sourceSets.filter(s => s.exerciseId === selectedExerciseId)
+      : selectedCycle
+        ? sourceSets.filter(s => s.cycleId === selectedCycle.id)
+        : []
 
   // Progress
   $: pendingCount = selectedCycle ? $pendingSets.filter(s => s.cycleId === selectedCycle.id).length : 0
@@ -192,7 +237,14 @@
   <!-- Header -->
   <header>
     <h1 class="font-display font-bold text-2xl text-surface-900 dark:text-surface-900">
-      {$_('log.title')}
+      {isHistorical
+        ? new Date(viewDate + 'T12:00:00').toLocaleDateString($locale || undefined, {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })
+        : $_('log.title')}
     </h1>
   </header>
 
@@ -236,72 +288,74 @@
     </div>
 
     <!-- Main log button -->
-    {#if selectedExercise && selectedCycle}
-      <div class="flex flex-col items-center py-8 animate-fade-in">
-        <!-- Progress ring with button -->
-        <button class="relative group" on:click={logSet} disabled={isComplete}>
-          <ProgressRing {progress} size={200} strokeWidth={12} color={selectedExercise.color}>
-            <div class="flex flex-col items-center">
-              {#if isComplete}
-                <svg
-                  class="w-16 h-16 text-green-500"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="16 10 11 15 8 12" />
-                </svg>
-              {:else}
-                <div class="relative flex flex-col items-center">
-                  <span
-                    class="num-display text-5xl text-surface-900 dark:text-surface-900 group-hover:scale-110 transition-transform"
+    {#if selectedExercise && (selectedCycle || isHistorical)}
+      {#if !isHistorical && selectedCycle}
+        <div class="flex flex-col items-center py-8 animate-fade-in">
+          <!-- Progress ring with button -->
+          <button class="relative group" on:click={logSet} disabled={isComplete}>
+            <ProgressRing {progress} size={200} strokeWidth={12} color={selectedExercise.color}>
+              <div class="flex flex-col items-center">
+                {#if isComplete}
+                  <svg
+                    class="w-16 h-16 text-green-500"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
                   >
-                    {selectedCycle.repsPerSet}
-                  </span>
-                  <span class="text-sm text-surface-500 dark:text-surface-400">
-                    {$_('log.reps')}
-                  </span>
-                  {#if isSyncing}
-                    <div
-                      class="absolute -top-8 flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 text-[10px] font-bold text-accent uppercase tracking-wider animate-pulse"
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="16 10 11 15 8 12" />
+                  </svg>
+                {:else}
+                  <div class="relative flex flex-col items-center">
+                    <span
+                      class="num-display text-5xl text-surface-900 dark:text-surface-900 group-hover:scale-110 transition-transform"
                     >
-                      <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                        <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" />
-                      </svg>
-                      {$_('common.syncing')}
-                    </div>
-                  {/if}
-                </div>
-              {/if}
-            </div>
-          </ProgressRing>
+                      {selectedCycle.repsPerSet}
+                    </span>
+                    <span class="text-sm text-surface-500 dark:text-surface-400">
+                      {$_('log.reps')}
+                    </span>
+                    {#if isSyncing}
+                      <div
+                        class="absolute -top-8 flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 text-[10px] font-bold text-accent uppercase tracking-wider animate-pulse"
+                      >
+                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                          <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" />
+                        </svg>
+                        {$_('common.syncing')}
+                      </div>
+                    {/if}
+                  </div>
+                {/if}
+              </div>
+            </ProgressRing>
 
-          {#if !isComplete}
-            <div
-              class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity"
-              style="background: radial-gradient(circle, {selectedExercise.color}20 0%, transparent 70%);"
-            />
-          {/if}
-        </button>
+            {#if !isComplete}
+              <div
+                class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity"
+                style="background: radial-gradient(circle, {selectedExercise.color}20 0%, transparent 70%);"
+              />
+            {/if}
+          </button>
 
-        <!-- Set counter -->
-        <div class="mt-6 text-center">
-          {#if isComplete}
-            <p class="font-display font-semibold text-xl text-green-600 dark:text-green-400">
-              {$_('log.allDone')}
-            </p>
-          {:else}
-            <p class="text-surface-500 dark:text-surface-400">
-              {$_('log.setNumber', { values: { number: nextSetNumber } })} / {totalSets}
-            </p>
-            <p class="text-sm text-surface-400 dark:text-surface-500 mt-1">
-              {$_('home.setsCompleted', { values: { count: totalCompleted, total: totalSets } })}
-            </p>
-          {/if}
+          <!-- Set counter -->
+          <div class="mt-6 text-center">
+            {#if isComplete}
+              <p class="font-display font-semibold text-xl text-green-600 dark:text-green-400">
+                {$_('log.allDone')}
+              </p>
+            {:else}
+              <p class="text-surface-500 dark:text-surface-400">
+                {$_('log.setNumber', { values: { number: nextSetNumber } })} / {totalSets}
+              </p>
+              <p class="text-sm text-surface-400 dark:text-surface-500 mt-1">
+                {$_('home.setsCompleted', { values: { count: totalCompleted, total: totalSets } })}
+              </p>
+            {/if}
+          </div>
         </div>
-      </div>
+      {/if}
 
       <!-- Today's sets list -->
       {#if exerciseSets.length > 0}
@@ -312,8 +366,8 @@
               {@const isPending = set.isPending}
               <button
                 class="w-full card p-4 text-left hover:shadow-soft transition-all {isPending ? 'opacity-80' : ''}"
-                on:click={() => !isPending && openEdit(set)}
-                disabled={isPending}
+                on:click={() => !isPending && !isHistorical && openEdit(set)}
+                disabled={isPending || isHistorical}
               >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">

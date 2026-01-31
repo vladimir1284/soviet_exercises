@@ -59,6 +59,7 @@ export interface CycleMetricValue {
 export interface SetLog {
   id: number
   cycleId: number
+  exerciseId?: number
   repsCompleted: number
   completedAt: string
   editedAt?: string
