@@ -91,8 +91,7 @@
     if (!$isOnline || $pendingSets.length === 0) return
 
     const setsToSync = [...$pendingSets]
-    // Clear pending sets immediately to avoid duplicate syncs
-    pendingSets.clear()
+    // Do NOT clear immediately. Remove one by one on success.
 
     let successCount = 0
     let failCount = 0
@@ -108,14 +107,16 @@
         if (response.ok) {
           const newSet = await response.json()
           todaySets.update(sets => [newSet, ...sets])
+          // Remove from pending sets only on success
+          pendingSets.removeByDate(setData.completedAt)
           successCount++
         } else {
           failCount++
-          pendingSets.add(setData) // Add back if failed
+          // Leave in pending sets
         }
       } catch (e) {
         failCount++
-        pendingSets.add(setData) // Add back if failed
+        // Leave in pending sets
       }
     }
 

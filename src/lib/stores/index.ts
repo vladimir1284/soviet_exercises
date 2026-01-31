@@ -218,6 +218,13 @@ function createPendingSetsStore() {
         return newSets
       })
     },
+    removeByDate: (completedAt: string) => {
+      update(sets => {
+        const newSets = sets.filter(s => s.completedAt !== completedAt)
+        if (browser) localStorage.setItem('pendingSets', JSON.stringify(newSets))
+        return newSets
+      })
+    },
   }
 }
 
