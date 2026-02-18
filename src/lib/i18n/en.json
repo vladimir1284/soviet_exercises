@@ -53,7 +53,8 @@
     "ctaEmail": "Use my Email",
     "footerCopyright": "Inspired by Baron's method.",
     "footerPrivacy": "Privacy",
-    "footerTerms": "Terms"
+    "footerTerms": "Terms",
+    "footerDataDeletion": "Data Deletion"
   },
   "nav": {
     "home": "Home",
@@ -181,7 +182,22 @@
     "termsPersonalUseTitle": "Personal Use",
     "termsPersonalUseDesc": "This application is intended for personal strength tracking and should not replace professional medical or fitness advice.",
     "deleteAccount": "Delete account",
-    "deleteAccountConfirm": "Are you sure? This action cannot be undone."
+    "deleteAccountConfirm": "Are you sure? This action cannot be undone.",
+    "dataDeletion": "Data Deletion",
+    "dataDeletionTitle": "Data Deletion Request",
+    "dataDeletionIntro": "We respect your right to control your data. Here is how you can request the deletion of your account and associated information.",
+    "dataDeletionStepsTitle": "Steps to Delete Your Account",
+    "dataDeletionStep1": "Log in to your SovietFit account.",
+    "dataDeletionStep2": "Navigate to the Settings page.",
+    "dataDeletionStep3": "Click on the \"Delete Account\" button at the bottom of the page.",
+    "dataDeletionStep4": "Confirm the action. Your account and all associated data will be permanently removed.",
+    "dataDeletionAlternativeTitle": "Alternative Request Method",
+    "dataDeletionAlternativeDesc": "If you cannot access your account, you can send an email to vladimir.rdguez@gmail.com from the email address associated with your account with the subject \"Data Deletion Request\".",
+    "dataDeletionTypesTitle": "Data Deleted or Kept",
+    "dataDeletionTypesDeleted": "The following data will be permanently deleted: your profile information (name, email), exercise logs (sets, reps, dates), and personal statistics.",
+    "dataDeletionTypesKept": "We do not retain any personal data after account deletion. However, any contributions made to our open-source repositories (e.g., on GitHub) will remain as part of the project history.",
+    "dataDeletionRetentionTitle": "Retention Period",
+    "dataDeletionRetentionDesc": "Once confirmed, the deletion process starts immediately. It may take up to 30 days for data to be completely removed from our backups."
   },
   "common": {
     "save": "Save",

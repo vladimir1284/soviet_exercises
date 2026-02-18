@@ -53,7 +53,8 @@
     "ctaEmail": "Usar mi Email",
     "footerCopyright": "Inspirado por el método de Baron.",
     "footerPrivacy": "Privacidad",
-    "footerTerms": "Términos"
+    "footerTerms": "Términos",
+    "footerDataDeletion": "Eliminación de Datos"
   },
   "nav": {
     "home": "Inicio",
@@ -181,7 +182,22 @@
     "termsPersonalUseTitle": "Uso Personal",
     "termsPersonalUseDesc": "Esta aplicación está destinada al seguimiento personal de la fuerza y no debe reemplazar el asesoramiento médico o de fitness profesional.",
     "deleteAccount": "Eliminar cuenta",
-    "deleteAccountConfirm": "¿Estás seguro? Esta acción no se puede deshacer."
+    "deleteAccountConfirm": "¿Estás seguro? Esta acción no se puede deshacer.",
+    "dataDeletion": "Eliminación de Datos",
+    "dataDeletionTitle": "Solicitud de Eliminación de Datos",
+    "dataDeletionIntro": "Respetamos su derecho a controlar sus datos. A continuación se describe cómo puede solicitar la eliminación de su cuenta y la información asociada.",
+    "dataDeletionStepsTitle": "Pasos para eliminar su cuenta",
+    "dataDeletionStep1": "Inicie sesión en su cuenta de SovietFit.",
+    "dataDeletionStep2": "Vaya a la página de Ajustes.",
+    "dataDeletionStep3": "Haga clic en el botón \"Eliminar cuenta\" en la parte inferior de la página.",
+    "dataDeletionStep4": "Confirme la acción. Su cuenta y todos los datos asociados se eliminarán de forma permanente.",
+    "dataDeletionAlternativeTitle": "Método de solicitud alternativo",
+    "dataDeletionAlternativeDesc": "Si no puede acceder a su cuenta, puede enviar un correo electrónico a vladimir.rdguez@gmail.com desde la dirección de correo electrónico asociada a su cuenta con el asunto \"Solicitud de eliminación de datos\".",
+    "dataDeletionTypesTitle": "Datos eliminados o conservados",
+    "dataDeletionTypesDeleted": "Los siguientes datos se eliminarán de forma permanente: su información de perfil (nombre, correo electrónico), registros de ejercicios (series, repeticiones, fechas) y estadísticas personales.",
+    "dataDeletionTypesKept": "No conservamos ningún dato personal después de la eliminación de la cuenta. Sin embargo, cualquier contribución realizada a nuestros repositorios de código abierto (por ejemplo, en GitHub) permanecerá como parte del historial del proyecto.",
+    "dataDeletionRetentionTitle": "Periodo de retención",
+    "dataDeletionRetentionDesc": "Una vez confirmada, el proceso de eliminación comienza inmediatamente. Puede tardar hasta 30 días en eliminarse por completo de nuestras copias de seguridad."
   },
   "common": {
     "save": "Guardar",

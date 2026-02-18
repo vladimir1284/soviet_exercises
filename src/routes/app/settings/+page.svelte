@@ -264,7 +264,7 @@
       </div>
 
       <a
-        href="mailto:feedback@sovietfit.app"
+        href="mailto:vladimir.rdguez@gmail.com"
         class="block p-4 text-sm text-surface-700 dark:text-surface-700 hover:bg-surface-100/50 transition-colors"
       >
         {$_('settings.feedback')}
@@ -275,6 +275,13 @@
         class="block p-4 text-sm text-surface-700 dark:text-surface-700 hover:bg-surface-100/50 transition-colors"
       >
         {$_('settings.privacy')}
+      </a>
+
+      <a
+        href="/data-deletion"
+        class="block p-4 text-sm text-surface-700 dark:text-surface-700 hover:bg-surface-100/50 transition-colors"
+      >
+        {$_('settings.dataDeletion')}
       </a>
     </div>
   </section>

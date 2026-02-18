@@ -231,6 +231,7 @@
       <div class="flex items-center gap-8 text-sm font-medium text-surface-600 dark:text-surface-400">
         <a href="/privacy" class="hover:text-accent transition-colors">{$_('landing.footerPrivacy')}</a>
         <a href="/terms" class="hover:text-accent transition-colors">{$_('landing.footerTerms')}</a>
+        <a href="/data-deletion" class="hover:text-accent transition-colors">{$_('landing.footerDataDeletion')}</a>
       </div>
 
       <p class="text-xs text-surface-500 dark:text-surface-600">
