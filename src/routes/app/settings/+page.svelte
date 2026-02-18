@@ -65,6 +65,31 @@
   function changeTheme(newTheme: ThemeOption) {
     theme.set(newTheme)
   }
+
+  // Delete account
+  async function deleteAccount() {
+    if (!browser || !$user?.id || !$user?.clerkId) return
+
+    if (!confirm($_('settings.deleteAccountConfirm'))) return
+
+    try {
+      const response = await fetch('/api/user/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: $user.id, clerkId: $user.clerkId }),
+      })
+
+      if (response.ok) {
+        toasts.add({ message: $_('common.done'), type: 'success' })
+        await signOut()
+      } else {
+        const error = await response.json()
+        toasts.add({ message: error.error || $_('common.error'), type: 'error' })
+      }
+    } catch (e) {
+      toasts.add({ message: $_('common.error'), type: 'error' })
+    }
+  }
 </script>
 
 <svelte:head>
@@ -292,5 +317,14 @@
       SovietFit &copy; {new Date().getFullYear()}
     </p>
     <p class="text-xs text-surface-400 dark:text-surface-500 mt-1">Made with 💪 for fitness enthusiasts</p>
+
+    <div class="mt-8 px-4">
+      <button
+        class="w-full py-4 rounded-xl text-red-600 dark:text-red-400 font-bold border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all font-display"
+        on:click={deleteAccount}
+      >
+        {$_('settings.deleteAccount')}
+      </button>
+    </div>
   </footer>
 </div>

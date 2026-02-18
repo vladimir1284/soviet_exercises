@@ -104,6 +104,8 @@ export const queries = {
       .first<DbUser>()
   },
 
+  deleteUser: (db: D1Database, id: number) => db.prepare('DELETE FROM users WHERE id = ?').bind(id).run(),
+
   // Exercises
   getExercisesByUser: (db: D1Database, userId: number) =>
     db
