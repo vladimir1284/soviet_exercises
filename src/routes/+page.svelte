@@ -215,8 +215,28 @@
   </main>
 
   <!-- Footer -->
-  <footer class="py-6 text-center text-xs text-surface-600 dark:text-surface-900 relative">
-    <p>{$_('app.name')} &copy; {new Date().getFullYear()}</p>
+  <footer
+    class="py-12 px-6 border-t border-surface-200 dark:border-surface-800 bg-surface-50 dark:bg-black/50 relative"
+  >
+    <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-2">
+        <div
+          class="w-6 h-6 bg-gradient-to-br from-accent to-purple-600 rounded flex items-center justify-center shadow-sm"
+        >
+          <img src="/icons/icon.svg" alt="" class="w-5 h-5" />
+        </div>
+        <span class="font-display font-bold text-surface-900 dark:text-surface-100">{$_('app.name')}</span>
+      </div>
+
+      <div class="flex items-center gap-8 text-sm font-medium text-surface-600 dark:text-surface-400">
+        <a href="/privacy" class="hover:text-accent transition-colors">{$_('landing.footerPrivacy')}</a>
+        <a href="/terms" class="hover:text-accent transition-colors">{$_('landing.footerTerms')}</a>
+      </div>
+
+      <p class="text-xs text-surface-500 dark:text-surface-600">
+        {$_('app.name')} &copy; {new Date().getFullYear()}
+      </p>
+    </div>
   </footer>
 </div>
 
