@@ -69,7 +69,8 @@
     "welcome": "Bienvenido a SovietFit",
     "welcomeBack": "¡Bienvenido de nuevo!",
     "continueWith": "Continuar con {provider}",
-    "orEmail": "o con tu email"
+    "orEmail": "o con tu email",
+    "orContinueWith": "o continuar con"
   },
   "home": {
     "greeting": "¡Hola, {name}!",
@@ -181,6 +182,14 @@
     "termsContributionDesc": "¡Las contribuciones son bienvenidas! Sigue nuestras pautas de la comunidad en GitHub para ayudar a que SovietFit sea mejor para todos.",
     "termsPersonalUseTitle": "Uso Personal",
     "termsPersonalUseDesc": "Esta aplicación está destinada al seguimiento personal de la fuerza y no debe reemplazar el asesoramiento médico o de fitness profesional.",
+    "setPassword": "Establecer contraseña",
+    "setPasswordDesc": "Agrega una contraseña para iniciar sesión con email",
+    "setPasswordNew": "Nueva contraseña",
+    "setPasswordConfirm": "Confirmar contraseña",
+    "setPasswordSave": "Guardar contraseña",
+    "setPasswordSuccess": "Contraseña establecida correctamente",
+    "setPasswordMismatch": "Las contraseñas no coinciden",
+    "setPasswordTooShort": "La contraseña debe tener al menos 8 caracteres",
     "deleteAccount": "Eliminar cuenta",
     "deleteAccountConfirm": "¿Estás seguro? Esta acción no se puede deshacer.",
     "dataDeletion": "Eliminación de Datos",

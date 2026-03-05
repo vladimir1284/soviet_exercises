@@ -4,6 +4,9 @@
   import { user, theme, settings, toasts, clearAllData, clerkInstance } from '$stores'
   import { browser } from '$app/environment'
   import { goto } from '$app/navigation'
+  import PasswordModal from '$lib/components/PasswordModal.svelte'
+
+  let showPasswordModal = false
 
   type ThemeOption = 'system' | 'light' | 'dark'
 
@@ -123,6 +126,16 @@
           </p>
         </div>
       </div>
+
+      <button
+        class="w-full p-4 text-left flex items-center justify-between hover:bg-surface-50 dark:hover:bg-surface-100/10 transition-colors"
+        on:click={() => (showPasswordModal = true)}
+      >
+        <span class="text-sm text-surface-700 dark:text-surface-700">{$_('settings.setPassword')}</span>
+        <svg class="w-4 h-4 text-surface-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6" />
+        </svg>
+      </button>
 
       <button
         class="w-full p-4 text-left text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -328,3 +341,5 @@
     </div>
   </footer>
 </div>
+
+<PasswordModal bind:open={showPasswordModal} onClose={() => (showPasswordModal = false)} />
