@@ -65,13 +65,13 @@
 
     <!-- Fields -->
     <div>
-      <label for="pw-new" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">
+      <label for="pw-new" class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
         {$_('settings.setPasswordNew')}
       </label>
       <input
         id="pw-new"
         type="password"
-        class="w-full px-4 py-3 rounded-xl bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-white border border-surface-200 dark:border-surface-700 focus:outline-none focus:ring-2 focus:ring-accent transition-all placeholder:text-surface-400"
+        class="input"
         placeholder="••••••••"
         bind:value={newPassword}
         autocomplete="new-password"
@@ -79,13 +79,13 @@
     </div>
 
     <div>
-      <label for="pw-confirm" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">
+      <label for="pw-confirm" class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
         {$_('settings.setPasswordConfirm')}
       </label>
       <input
         id="pw-confirm"
         type="password"
-        class="w-full px-4 py-3 rounded-xl bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-white border border-surface-200 dark:border-surface-700 focus:outline-none focus:ring-2 focus:ring-accent transition-all placeholder:text-surface-400"
+        class="input"
         placeholder="••••••••"
         bind:value={confirmPassword}
         autocomplete="new-password"
@@ -107,14 +107,14 @@
   <svelte:fragment slot="footer">
     <div class="flex gap-3">
       <button
-        class="flex-1 py-3 rounded-xl text-sm font-medium bg-surface-100 dark:bg-surface-800 text-surface-700 dark:text-surface-300 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
+        class="btn btn-secondary btn-md flex-1"
         on:click={close}
         disabled={isLoading}
       >
         {$_('common.cancel')}
       </button>
       <button
-        class="flex-1 py-3 rounded-xl text-sm font-semibold bg-accent text-white hover:bg-accent/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+        class="btn btn-primary btn-md flex-1"
         on:click={save}
         disabled={isLoading}
       >
