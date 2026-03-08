@@ -441,6 +441,7 @@
             needsRecalibration={cycle ? needsRecalibration(cycle) : false}
             onLog={() => handleQuickLog(exercise)}
             onConfigure={() => handleConfigure(exercise)}
+            onRecalibrate={() => handleConfigure(exercise)}
             onEdit={() => handleEdit(exercise)}
           />
         {/each}

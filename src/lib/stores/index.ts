@@ -255,7 +255,10 @@ export const activeCycles = derived(cycles, $cycles => $cycles.filter(c => c.isA
 export function needsRecalibration(cycle: Cycle): boolean {
   if (!cycle.isActive) return false
 
-  const start = new Date(cycle.startDate)
+  // Parse YYYY-MM-DD parts directly to avoid UTC midnight vs local midnight mismatch
+  const datePart = cycle.startDate.split('T')[0]
+  const [y, m, d] = datePart.split('-').map(Number)
+  const start = new Date(y, m - 1, d) // local midnight, no UTC shift
   const now = new Date()
   const weeks = Math.floor((now.getTime() - start.getTime()) / (7 * 24 * 60 * 60 * 1000))
 
