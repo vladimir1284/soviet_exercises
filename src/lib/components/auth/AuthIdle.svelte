@@ -9,32 +9,47 @@
     emailPassword: void
     google: void
   }>()
+
+  let mode: 'signIn' | 'signUp' = 'signIn'
 </script>
 
 <div class="space-y-3">
-  <!-- Option 1 – Email code -->
-  <button
-    class="w-full btn btn-primary btn-lg"
-    on:click={() => dispatch('emailCode')}
-  >
-    <!-- Sparkle / magic icon -->
-    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
-    </svg>
-    {$_('auth.signInWithCode')}
-  </button>
+  {#if mode === 'signIn'}
+    <!-- Option 1 – Email code -->
+    <button
+      class="w-full btn btn-primary btn-lg"
+      on:click={() => dispatch('emailCode')}
+    >
+      <!-- Sparkle / magic icon -->
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
+      </svg>
+      {$_('auth.signInWithCode')}
+    </button>
 
-  <!-- Option 2 – Email + password -->
-  <button
-    class="w-full btn btn-secondary btn-lg"
-    on:click={() => dispatch('emailPassword')}
-  >
-    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-    </svg>
-    {$_('auth.signInWithPassword')}
-  </button>
+    <!-- Option 2 – Email + password -->
+    <button
+      class="w-full btn btn-secondary btn-lg"
+      on:click={() => dispatch('emailPassword')}
+    >
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="4" width="20" height="16" rx="2" />
+        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+      </svg>
+      {$_('auth.signInWithPassword')}
+    </button>
+  {:else}
+    <!-- Option 1 – Email code for Sign Up -->
+    <button
+      class="w-full btn btn-primary btn-lg"
+      on:click={() => dispatch('emailCode')}
+    >
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
+      </svg>
+      {$_('auth.signUpWithCode')}
+    </button>
+  {/if}
 
   <!-- Divider + Google (only in secure browsers) -->
   {#if !isWebView}
@@ -71,4 +86,19 @@
       {$_('auth.continueWith', { values: { provider: 'Google' } })}
     </button>
   {/if}
+
+  <!-- Toggle -->
+  <div class="mt-4 text-center text-sm text-surface-500 dark:text-surface-400">
+    {#if mode === 'signIn'}
+      {$_('auth.noAccount')}
+      <button class="text-accent font-medium hover:underline ml-1" on:click={() => mode = 'signUp'}>
+        {$_('auth.signUp')}
+      </button>
+    {:else}
+      {$_('auth.haveAccount')}
+      <button class="text-accent font-medium hover:underline ml-1" on:click={() => mode = 'signIn'}>
+        {$_('auth.signIn')}
+      </button>
+    {/if}
+  </div>
 </div>

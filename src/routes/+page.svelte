@@ -11,6 +11,7 @@
   import AuthEmailPassword from '$lib/components/auth/AuthEmailPassword.svelte'
   import AuthPassword from '$lib/components/auth/AuthPassword.svelte'
   import FeaturePills from '$lib/components/auth/FeaturePills.svelte'
+  import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte'
 
   // ─── Types ────────────────────────────────────────────────────────────────
   type Step =
@@ -334,6 +335,9 @@
         <!-- AUTH COMPONENTS                                                -->
         <!-- ═══════════════════════════════════════════════════════════════ -->
         {#if step === 'idle'}
+          <div class="flex justify-end mb-4">
+            <LanguageSwitcher />
+          </div>
           <AuthIdle
             {isWebView}
             on:emailCode={() => {
