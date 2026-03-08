@@ -56,7 +56,7 @@
     {#if isSubmitting}
       <span class="loading loading-spinner loading-sm" />
     {:else}
-      {$_('common.continue')}
+      {$_('auth.signIn')}
     {/if}
   </button>
 </div>
