@@ -10,6 +10,7 @@
   export let needsRecalibration: boolean = false
   export let onLog: (() => void) | undefined = undefined
   export let onConfigure: (() => void) | undefined = undefined
+  export let onRecalibrate: (() => void) | undefined = undefined
   export let onEdit: (() => void) | undefined = undefined
 
   $: totalSets = cycle?.setsPerDay ?? 0
@@ -111,6 +112,18 @@
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
           {/if}
+        </button>
+      {:else if needsRecalibration}
+        <!-- Recalibrate: start a new cycle -->
+        <button
+          class="btn btn-secondary btn-icon animate-pulse"
+          on:click={onRecalibrate}
+          aria-label={$_('home.newCycle')}
+          title={$_('home.newCycle')}
+        >
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" />
+          </svg>
         </button>
       {:else}
         <button class="btn btn-secondary btn-icon" on:click={onConfigure} aria-label={$_('exercises.configure')}>

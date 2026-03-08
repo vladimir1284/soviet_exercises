@@ -70,7 +70,35 @@
     "welcomeBack": "¡Bienvenido de nuevo!",
     "continueWith": "Continuar con {provider}",
     "orEmail": "o con tu email",
-    "orContinueWith": "o continuar con"
+    "orContinueWith": "o continuar con",
+    "signInWithCode": "Iniciar sesión con Código",
+    "signInWithPassword": "Iniciar sesión con Contraseña",
+    "codeHint": "Te enviaremos un código de 6 dígitos a tu email.",
+    "email": "Email",
+    "sendCode": "Enviar código",
+    "changeEmail": "Cambiar email",
+    "verificationCode": "Código de verificación",
+    "codesentTo": "Código enviado a {email}",
+    "verifyCode": "Verificar código",
+    "didntReceive": "¿No recibiste el código?",
+    "resendCode": "Reenviar",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "hidePassword": "Ocultar contraseña",
+    "showPassword": "Mostrar contraseña",
+    "errors": {
+      "userNotFound": "Usuario no encontrado",
+      "wrongPassword": "Contraseña incorrecta",
+      "tooManyRequests": "Demasiados intentos. Intenta más tarde.",
+      "emailExists": "El email ya está registrado",
+      "sessionExists": "Ya tienes una sesión activa",
+      "invalidCode": "Código inválido",
+      "expiredCode": "El código ha expirado",
+      "generic": "Ha ocurrido un error inesperado",
+      "noEmailCodeFactor": "El código por email no está soportado para esta cuenta",
+      "needs2FA": "Se requiere autenticación de dos pasos",
+      "noPasswordFactor": "La contraseña no está soportada para esta cuenta"
+    }
   },
   "home": {
     "greeting": "¡Hola, {name}!",
@@ -83,6 +111,7 @@
     "noExercises": "Configura tu primer ejercicio",
     "addExercise": "Añadir ejercicio",
     "quickLog": "Registrar tanda",
+    "newCycle": "Iniciar nuevo ciclo",
     "viewAll": "Ver todo"
   },
   "exercises": {

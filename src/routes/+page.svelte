@@ -1,37 +1,76 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n'
-  import { onMount, tick } from 'svelte'
+  import { onMount } from 'svelte'
   import { browser } from '$app/environment'
   import { goto } from '$app/navigation'
   import { user, isOnline } from '$stores'
 
-  let clerk: any = null
-  let isLoading = true
-  let showEmailForm = false
-  let emailFormEl: HTMLDivElement
+  import AuthIdle from '$lib/components/auth/AuthIdle.svelte'
+  import AuthEmailCode from '$lib/components/auth/AuthEmailCode.svelte'
+  import AuthOtp from '$lib/components/auth/AuthOtp.svelte'
+  import AuthEmailPassword from '$lib/components/auth/AuthEmailPassword.svelte'
+  import AuthPassword from '$lib/components/auth/AuthPassword.svelte'
+  import FeaturePills from '$lib/components/auth/FeaturePills.svelte'
 
+  // ─── Types ────────────────────────────────────────────────────────────────
+  type Step =
+    | 'idle'
+    | 'email-code' // email input → OTP flow
+    | 'otp' // enter the received code
+    | 'email-password' // email input → password flow
+    | 'password' // enter password
+
+  type AuthMode = 'code' | 'password' | null
+
+  // ─── State ────────────────────────────────────────────────────────────────
+  let clerk: any = null
+  let signInAttempt: any = null
+
+  let isLoading = true
+  let step: Step = 'idle'
+  let authMode: AuthMode = null
+  let error = ''
+
+  let email = ''
+  let password = ''
+  let otpCode = ''
+  let showPassword = false
+  let isSubmitting = false
+
+  // ─── WebView detection ────────────────────────────────────────────────────
+  function detectWebView(): boolean {
+    if (!browser) return false
+    const ua = navigator.userAgent
+    const isIOSWebView = /iPhone|iPad|iPod/.test(ua) && !/Safari/.test(ua)
+    const isAndroidWV = /Android/.test(ua) && /wv/.test(ua)
+    const isSocialBrowser = /FBAN|FBAV|Instagram|Twitter|LinkedInApp|Snapchat|Line\/|MicroMessenger/.test(ua)
+    return isIOSWebView || isAndroidWV || isSocialBrowser
+  }
+
+  let isWebView = false
+
+  // ─── Lifecycle ────────────────────────────────────────────────────────────
   onMount(async () => {
     if (!browser) return
 
-    // If offline and we have a cached user, go to app
+    isWebView = detectWebView()
+
     if (!$isOnline && $user) {
       goto('/app')
       return
     }
 
     try {
-      // Wait for Clerk to be available on window (loaded from CDN)
       let attempts = 0
       while (!(window as any).Clerk && attempts < 50) {
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise(r => setTimeout(r, 100))
         attempts++
       }
 
       const Clerk = (window as any).Clerk
-      if (!Clerk) throw new Error('Clerk not found on window')
+      if (!Clerk) throw new Error('Clerk not available')
 
       clerk = Clerk
-
       await clerk.load()
 
       if (clerk.user) {
@@ -40,7 +79,6 @@
       }
     } catch (e) {
       console.error('Clerk load failed:', e)
-      // If clerk fails (likely offline) but we have a cached user, go to app
       if ($user) {
         goto('/app')
         return
@@ -50,67 +88,223 @@
     isLoading = false
   })
 
-  async function showSignInWithEmail() {
-    showEmailForm = true
-    await tick()
-    if (clerk && emailFormEl) {
-      clerk.mountSignIn(emailFormEl, {
-        forceRedirectUrl: '/app',
-        appearance: {
-          elements: {
-            rootBox: 'w-full',
-            card: 'shadow-none bg-transparent p-0',
-            cardBox: 'shadow-none',
-          },
-        },
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+  function clerkErrorMessage(err: any): string {
+    const code = err?.errors?.[0]?.code ?? ''
+    const msg = err?.errors?.[0]?.message ?? ''
+
+    const map: Record<string, string> = {
+      form_identifier_not_found: $_('auth.errors.userNotFound'),
+      form_password_incorrect: $_('auth.errors.wrongPassword'),
+      too_many_requests: $_('auth.errors.tooManyRequests'),
+      form_identifier_exists: $_('auth.errors.emailExists'),
+      session_exists: $_('auth.errors.sessionExists'),
+      form_code_incorrect: $_('auth.errors.invalidCode'),
+      form_code_expired: $_('auth.errors.expiredCode'),
+    }
+
+    return map[code] ?? msg ?? $_('auth.errors.generic')
+  }
+
+  function reset() {
+    step = 'idle'
+    authMode = null
+    error = ''
+    email = ''
+    password = ''
+    otpCode = ''
+    isSubmitting = false
+    signInAttempt = null
+  }
+
+  function goBack() {
+    error = ''
+    isSubmitting = false
+
+    if (step === 'password') {
+      step = 'email-password'
+      password = ''
+      signInAttempt = null
+    } else if (step === 'otp') {
+      step = 'email-code'
+      otpCode = ''
+      signInAttempt = null
+    } else {
+      reset()
+    }
+  }
+
+  // ─── OTP flow: Step 1 → send code ─────────────────────────────────────────
+  async function submitEmailForCode() {
+    if (!email.trim() || isSubmitting) return
+    error = ''
+    isSubmitting = true
+
+    try {
+      signInAttempt = await clerk.client.signIn.create({ identifier: email.trim() })
+
+      const emailCodeFactor = signInAttempt.supportedFirstFactors?.find((f: any) => f.strategy === 'email_code')
+
+      if (!emailCodeFactor) {
+        error = $_('auth.errors.noEmailCodeFactor')
+        isSubmitting = false
+        return
+      }
+
+      await signInAttempt.prepareFirstFactor({
+        strategy: 'email_code',
+        emailAddressId: emailCodeFactor.emailAddressId,
       })
+      step = 'otp'
+    } catch (e: any) {
+      error = clerkErrorMessage(e)
+    } finally {
+      isSubmitting = false
     }
   }
 
-  function hideEmailForm() {
-    if (clerk && emailFormEl) {
-      try {
-        clerk.unmountSignIn(emailFormEl)
-      } catch (_) {}
+  // ─── OTP flow: Step 2 → verify code ───────────────────────────────────────
+  async function submitOtp() {
+    if (!otpCode.trim() || isSubmitting || !signInAttempt) return
+    error = ''
+    isSubmitting = true
+
+    try {
+      const result = await signInAttempt.attemptFirstFactor({
+        strategy: 'email_code',
+        code: otpCode.trim(),
+      })
+
+      if (result.status === 'complete') {
+        await clerk.setActive({ session: result.createdSessionId })
+        goto('/app')
+      } else if (result.status === 'needs_second_factor') {
+        error = $_('auth.errors.needs2FA')
+      } else {
+        error = $_('auth.errors.generic')
+      }
+    } catch (e: any) {
+      error = clerkErrorMessage(e)
+    } finally {
+      isSubmitting = false
     }
-    showEmailForm = false
   }
 
+  async function resendCode() {
+    if (!signInAttempt || isSubmitting) return
+    error = ''
+    isSubmitting = true
+    try {
+      const emailCodeFactor = signInAttempt.supportedFirstFactors?.find((f: any) => f.strategy === 'email_code')
+      await signInAttempt.prepareFirstFactor({
+        strategy: 'email_code',
+        emailAddressId: emailCodeFactor?.emailAddressId,
+      })
+      otpCode = ''
+    } catch (e: any) {
+      error = clerkErrorMessage(e)
+    } finally {
+      isSubmitting = false
+    }
+  }
+
+  // ─── Password flow: Step 1 → resolve email ────────────────────────────────
+  async function submitEmailForPassword() {
+    if (!email.trim() || isSubmitting) return
+    error = ''
+    isSubmitting = true
+
+    try {
+      signInAttempt = await clerk.client.signIn.create({ identifier: email.trim() })
+
+      const supportsPassword = signInAttempt.supportedFirstFactors?.some((f: any) => f.strategy === 'password')
+
+      if (supportsPassword) {
+        step = 'password'
+      } else {
+        error = $_('auth.errors.noPasswordFactor')
+      }
+    } catch (e: any) {
+      error = clerkErrorMessage(e)
+    } finally {
+      isSubmitting = false
+    }
+  }
+
+  // ─── Password flow: Step 2 → attempt password ─────────────────────────────
+  async function submitPassword() {
+    if (!password || isSubmitting || !signInAttempt) return
+    error = ''
+    isSubmitting = true
+
+    try {
+      const result = await signInAttempt.attemptFirstFactor({
+        strategy: 'password',
+        password,
+      })
+
+      if (result.status === 'complete') {
+        await clerk.setActive({ session: result.createdSessionId })
+        goto('/app')
+      } else if (result.status === 'needs_second_factor') {
+        error = $_('auth.errors.needs2FA')
+      } else {
+        error = $_('auth.errors.generic')
+      }
+    } catch (e: any) {
+      error = clerkErrorMessage(e)
+    } finally {
+      isSubmitting = false
+    }
+  }
+
+  // ─── Google OAuth ─────────────────────────────────────────────────────────
   async function signInWithGoogle() {
-    if (!clerk) return
-    await clerk.openSignIn({
-      redirectUrl: '/app',
-      strategy: 'oauth_google',
-    })
+    if (!clerk || isWebView) return
+    try {
+      await clerk.client.signIn.authenticateWithRedirect({
+        strategy: 'oauth_google',
+        redirectUrl: `${window.location.origin}/sso-callback`,
+        redirectUrlComplete: '/app',
+      })
+    } catch (e: any) {
+      error = clerkErrorMessage(e)
+    }
   }
+
 </script>
 
+<!-- ─────────────────────────────────────────────── -->
 <svelte:head>
   <title>{$_('app.name')} - {$_('app.tagline')}</title>
 </svelte:head>
 
 <div
-  class="min-h-screen flex flex-col bg-gradient-to-br from-surface-100 via-surface-50 to-indigo-50 dark:from-surface-50 dark:via-surface-50 dark:to-indigo-950/30"
+  class="min-h-screen flex flex-col bg-gradient-to-br from-surface-100 via-surface-50 to-indigo-50
+         dark:from-surface-50 dark:via-surface-50 dark:to-indigo-950/30"
 >
-  <!-- Decorative elements -->
-  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+  <!-- Decorative blobs -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
     <div class="absolute -top-40 -right-40 w-80 h-80 bg-accent/10 rounded-full blur-3xl" />
     <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl" />
   </div>
 
   <main class="flex-1 flex flex-col items-center justify-center px-6 py-12 relative">
+    <!-- ── Skeleton while Clerk loads ── -->
     {#if isLoading}
       <div class="animate-pulse flex flex-col items-center gap-4">
         <div class="w-20 h-20 bg-surface-200 dark:bg-surface-800 rounded-2xl" />
         <div class="w-32 h-6 bg-surface-200 dark:bg-surface-800 rounded-lg" />
       </div>
     {:else}
-      <!-- Logo & Title -->
+      <!-- ── Logo & title ── -->
       <div class="text-center mb-10 animate-fade-in">
         <div
-          class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-accent to-purple-600 rounded-3xl flex items-center justify-center shadow-lg shadow-accent/30 rotate-3 hover:rotate-0 transition-transform duration-300"
+          class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-accent to-purple-600 rounded-3xl
+                 flex items-center justify-center shadow-lg shadow-accent/30
+                 rotate-3 hover:rotate-0 transition-transform duration-300"
         >
-          <img src="/icons/icon.svg" alt="" class="w-24 h-24 inline-block" />
+          <img src="/icons/icon.svg" alt="" class="w-24 h-24" />
         </div>
         <h1 class="font-display font-bold text-4xl text-surface-900 dark:text-white mb-2">
           {$_('app.name')}
@@ -120,137 +314,84 @@
         </p>
       </div>
 
-      <!-- Auth section -->
+      <!-- ── Auth card ── -->
       <div class="w-full max-w-sm animate-slide-up" style="animation-delay: 0.1s;">
-        {#if showEmailForm}
-          <!-- Inline Clerk SignIn form -->
-          <div class="space-y-4">
-            <div bind:this={emailFormEl} class="clerk-signin-container" />
-            <button
-              class="w-full text-sm text-surface-500 dark:text-surface-400 hover:text-accent dark:hover:text-accent transition-colors py-2"
-              on:click={hideEmailForm}
-            >
-              ← {$_('common.back')}
-            </button>
-          </div>
-        {:else}
-          <div class="space-y-4">
-            <!-- Email / Password sign-in (primary) -->
-            <button class="w-full btn btn-primary btn-lg" on:click={showSignInWithEmail}>
-              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="4" width="20" height="16" rx="2" />
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-              </svg>
-              {$_('auth.signIn')}
-            </button>
+        <!-- Back button (any non-idle step) -->
+        {#if step !== 'idle'}
+          <button
+            class="flex items-center gap-1.5 text-sm text-surface-500 dark:text-surface-400
+                   hover:text-accent dark:hover:text-accent transition-colors mb-6"
+            on:click={goBack}
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 5l-7 7 7 7" />
+            </svg>
+            {$_('common.back')}
+          </button>
+        {/if}
 
-            <!-- Divider -->
-            <div class="relative">
-              <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-surface-200 dark:border-surface-700" />
-              </div>
-              <div class="relative flex justify-center text-sm">
-                <span class="px-4 bg-surface-50 dark:bg-surface-950 text-surface-500 dark:text-surface-400">
-                  {$_('auth.orContinueWith')}
-                </span>
-              </div>
-            </div>
-
-            <!-- Google sign-in (secondary) -->
-            <button
-              class="w-full btn btn-lg bg-white dark:bg-surface-100 text-surface-900 dark:text-white border border-surface-200 dark:border-surface-600 hover:bg-surface-50 dark:hover:bg-surface-700 shadow-soft"
-              on:click={signInWithGoogle}
-            >
-              <svg class="w-5 h-5" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                />
-              </svg>
-              {$_('auth.continueWith', { values: { provider: 'Google' } })}
-            </button>
-          </div>
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- AUTH COMPONENTS                                                -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        {#if step === 'idle'}
+          <AuthIdle
+            {isWebView}
+            on:emailCode={() => {
+              authMode = 'code'
+              step = 'email-code'
+              error = ''
+            }}
+            on:emailPassword={() => {
+              authMode = 'password'
+              step = 'email-password'
+              error = ''
+            }}
+            on:google={signInWithGoogle}
+          />
+        {:else if step === 'email-code'}
+          <AuthEmailCode
+            bind:email
+            {error}
+            {isSubmitting}
+            on:submit={submitEmailForCode}
+          />
+        {:else if step === 'otp'}
+          <AuthOtp
+            {email}
+            bind:otpCode
+            {error}
+            {isSubmitting}
+            on:back={goBack}
+            on:submit={submitOtp}
+            on:resend={resendCode}
+          />
+        {:else if step === 'email-password'}
+          <AuthEmailPassword
+            bind:email
+            {error}
+            {isSubmitting}
+            on:submit={submitEmailForPassword}
+          />
+        {:else if step === 'password'}
+          <AuthPassword
+            {email}
+            bind:password
+            {error}
+            {isSubmitting}
+            on:back={goBack}
+            on:submit={submitPassword}
+          />
         {/if}
       </div>
 
-      <!-- Features preview -->
-      {#if !showEmailForm}
-        <div class="mt-14 grid grid-cols-3 gap-6 text-center animate-slide-up" style="animation-delay: 0.2s;">
-          <div class="space-y-2">
-            <div
-              class="w-12 h-12 mx-auto bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center"
-            >
-              <svg
-                class="w-6 h-6 text-green-600 dark:text-green-400"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-              </svg>
-            </div>
-            <p class="text-xs text-surface-700 dark:text-surface-300 font-medium">
-              {$_('stats.progress')}
-            </p>
-          </div>
-          <div class="space-y-2">
-            <div class="w-12 h-12 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-              <svg
-                class="w-6 h-6 text-blue-600 dark:text-blue-400"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-            </div>
-            <p class="text-xs text-surface-700 dark:text-surface-300 font-medium">
-              {$_('exercises.configure')}
-            </p>
-          </div>
-          <div class="space-y-2">
-            <div
-              class="w-12 h-12 mx-auto bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center"
-            >
-              <svg
-                class="w-6 h-6 text-purple-600 dark:text-purple-400"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M12 20V10" />
-                <path d="M18 20V4" />
-                <path d="M6 20v-4" />
-              </svg>
-            </div>
-            <p class="text-xs text-surface-700 dark:text-surface-300 font-medium">
-              {$_('stats.title')}
-            </p>
-          </div>
-        </div>
+      <!-- ── Feature pills (solo en idle) ── -->
+      {#if step === 'idle'}
+        <FeaturePills />
       {/if}
     {/if}
   </main>
 
-  <!-- Footer -->
+  <!-- ── Footer ── -->
   <footer
     class="py-10 px-6 border-t border-surface-200 dark:border-surface-800 bg-surface-50 dark:bg-black/90 relative"
   >
@@ -270,9 +411,7 @@
         <a href="/data-deletion" class="hover:text-accent transition-colors">{$_('landing.footerDataDeletion')}</a>
       </div>
 
-      <p class="text-xs text-surface-500 dark:text-surface-500">
-        {$_('app.name')} &copy; {new Date().getFullYear()}
-      </p>
+      <p class="text-xs text-surface-500">{$_('app.name')} &copy; {new Date().getFullYear()}</p>
     </div>
   </footer>
 </div>
@@ -301,21 +440,8 @@
   .animate-fade-in {
     animation: fade-in 0.8s ease-out forwards;
   }
-
   .animate-slide-up {
     opacity: 0;
     animation: slide-up 0.8s ease-out forwards;
-  }
-
-  /* Make Clerk's embedded component blend with our design */
-  .clerk-signin-container :global(.cl-rootBox) {
-    width: 100%;
-  }
-
-  .clerk-signin-container :global(.cl-card) {
-    box-shadow: none;
-    background: transparent;
-    border: none;
-    padding: 0;
   }
 </style>

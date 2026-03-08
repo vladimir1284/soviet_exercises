@@ -70,7 +70,35 @@
     "welcomeBack": "Welcome back!",
     "continueWith": "Continue with {provider}",
     "orEmail": "or with email",
-    "orContinueWith": "or continue with"
+    "orContinueWith": "or continue with",
+    "signInWithCode": "Sign in with Code",
+    "signInWithPassword": "Sign in with Password",
+    "codeHint": "We'll send you a 6-digit code to your email.",
+    "email": "Email",
+    "sendCode": "Send code",
+    "changeEmail": "Change email",
+    "verificationCode": "Verification code",
+    "codesentTo": "Code sent to {email}",
+    "verifyCode": "Verify code",
+    "didntReceive": "Didn't receive the code?",
+    "resendCode": "Resend",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password",
+    "errors": {
+      "userNotFound": "User not found",
+      "wrongPassword": "Incorrect password",
+      "tooManyRequests": "Too many requests. Try again later.",
+      "emailExists": "Email already exists",
+      "sessionExists": "Session already exists",
+      "invalidCode": "Invalid code",
+      "expiredCode": "Code expired",
+      "generic": "An unexpected error occurred",
+      "noEmailCodeFactor": "Email code not supported for this account",
+      "needs2FA": "Two-factor authentication required",
+      "noPasswordFactor": "Password not supported for this account"
+    }
   },
   "home": {
     "greeting": "Hey, {name}!",
@@ -83,6 +111,7 @@
     "noExercises": "Set up your first exercise",
     "addExercise": "Add exercise",
     "quickLog": "Log set",
+    "newCycle": "Start new cycle",
     "viewAll": "View all"
   },
   "exercises": {
