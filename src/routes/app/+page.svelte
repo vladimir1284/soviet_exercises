@@ -468,16 +468,16 @@
     </div>
 
     <div>
-      <label id="exercise-icon-label" class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
+      <span id="exercise-icon-label" class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
         {$_('exercises.icon')}
-      </label>
+      </span>
       <EmojiPicker bind:selected={newExercise.icon} aria-labelledby="exercise-icon-label" />
     </div>
 
     <div>
-      <label id="exercise-color-label" class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
+      <span id="exercise-color-label" class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
         {$_('exercises.color')}
-      </label>
+      </span>
       <ColorPicker bind:selected={newExercise.color} aria-labelledby="exercise-color-label" />
     </div>
   </form>
@@ -635,17 +635,17 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
+      <span id="edit-exercise-icon-label" class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
         {$_('exercises.icon')}
-      </label>
-      <EmojiPicker bind:selected={editingExerciseData.icon} />
+      </span>
+      <EmojiPicker bind:selected={editingExerciseData.icon} aria-labelledby="edit-exercise-icon-label" />
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
+      <span id="edit-exercise-color-label" class="block text-sm font-medium text-surface-700 dark:text-surface-700 mb-2">
         {$_('exercises.color')}
-      </label>
-      <ColorPicker bind:selected={editingExerciseData.color} />
+      </span>
+      <ColorPicker bind:selected={editingExerciseData.color} aria-labelledby="edit-exercise-color-label" />
     </div>
 
     <div class="pt-4 border-t border-surface-200 dark:border-surface-200/20">
