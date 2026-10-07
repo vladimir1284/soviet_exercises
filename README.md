@@ -97,6 +97,12 @@ npm run dev
 npm run deploy
 ```
 
+## Google Play Store Review Access
+
+For publishing to Google Play Console, embedded WebViews disable Google OAuth, and email OTP links require an external inbox. We support **Email + Password** authentication for reviewers.
+
+See [PLAY_STORE_REVIEW.md](./PLAY_STORE_REVIEW.md) for full instructions on setting up a reviewer test account in Clerk and configuring App Access credentials in Google Play Console.
+
 ## Project Structure
 
 ```

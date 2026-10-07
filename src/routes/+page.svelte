@@ -26,6 +26,7 @@
   // ─── State ────────────────────────────────────────────────────────────────
   let clerk: any = null
   let signInAttempt: any = null
+  let isSignUpFlow = false
 
   let isLoading = true
   let step: Step = 'idle'
@@ -116,6 +117,7 @@
     otpCode = ''
     isSubmitting = false
     signInAttempt = null
+    isSignUpFlow = false
   }
 
   function goBack() {
@@ -126,10 +128,12 @@
       step = 'email-password'
       password = ''
       signInAttempt = null
+      isSignUpFlow = false
     } else if (step === 'otp') {
       step = 'email-code'
       otpCode = ''
       signInAttempt = null
+      isSignUpFlow = false
     } else {
       reset()
     }
@@ -171,10 +175,15 @@
     isSubmitting = true
 
     try {
-      const result = await signInAttempt.attemptFirstFactor({
-        strategy: 'email_code',
-        code: otpCode.trim(),
-      })
+      let result
+      if (signInAttempt.attemptEmailAddressVerification) {
+        result = await signInAttempt.attemptEmailAddressVerification({ code: otpCode.trim() })
+      } else {
+        result = await signInAttempt.attemptFirstFactor({
+          strategy: 'email_code',
+          code: otpCode.trim(),
+        })
+      }
 
       if (result.status === 'complete') {
         await clerk.setActive({ session: result.createdSessionId })
@@ -214,6 +223,7 @@
     if (!email.trim() || isSubmitting) return
     error = ''
     isSubmitting = true
+    isSignUpFlow = false
 
     try {
       signInAttempt = await clerk.client.signIn.create({ identifier: email.trim() })
@@ -226,7 +236,14 @@
         error = $_('auth.errors.noPasswordFactor')
       }
     } catch (e: any) {
-      error = clerkErrorMessage(e)
+      const code = e?.errors?.[0]?.code
+      if (code === 'form_identifier_not_found') {
+        isSignUpFlow = true
+        signInAttempt = null
+        step = 'password'
+      } else {
+        error = clerkErrorMessage(e)
+      }
     } finally {
       isSubmitting = false
     }
@@ -234,23 +251,46 @@
 
   // ─── Password flow: Step 2 → attempt password ─────────────────────────────
   async function submitPassword() {
-    if (!password || isSubmitting || !signInAttempt) return
+    if (!password || isSubmitting) return
     error = ''
     isSubmitting = true
 
     try {
-      const result = await signInAttempt.attemptFirstFactor({
-        strategy: 'password',
-        password,
-      })
+      if (isSignUpFlow || !signInAttempt) {
+        const signUpResult = await clerk.client.signUp.create({
+          emailAddress: email.trim(),
+          password,
+        })
 
-      if (result.status === 'complete') {
-        await clerk.setActive({ session: result.createdSessionId })
-        goto('/app')
-      } else if (result.status === 'needs_second_factor') {
-        error = $_('auth.errors.needs2FA')
+        if (signUpResult.status === 'complete') {
+          await clerk.setActive({ session: signUpResult.createdSessionId })
+          goto('/app')
+        } else if (signUpResult.status === 'missing_requirements') {
+          const emailCodeFactor = signUpResult.verifications?.emailAddress
+          if (emailCodeFactor?.status === 'unverified') {
+            await signUpResult.prepareEmailAddressVerification({ strategy: 'email_code' })
+            signInAttempt = signUpResult
+            step = 'otp'
+          } else {
+            error = $_('auth.errors.generic')
+          }
+        } else {
+          error = $_('auth.errors.generic')
+        }
       } else {
-        error = $_('auth.errors.generic')
+        const result = await signInAttempt.attemptFirstFactor({
+          strategy: 'password',
+          password,
+        })
+
+        if (result.status === 'complete') {
+          await clerk.setActive({ session: result.createdSessionId })
+          goto('/app')
+        } else if (result.status === 'needs_second_factor') {
+          error = $_('auth.errors.needs2FA')
+        } else {
+          error = $_('auth.errors.generic')
+        }
       }
     } catch (e: any) {
       error = clerkErrorMessage(e)
