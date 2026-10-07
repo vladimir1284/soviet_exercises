@@ -11,6 +11,9 @@ node_modules
 .env.*
 !.env.example
 
+# Logs
+*.log
+
 # Editor/OS files
 .DS_Store
 vite.config.js.timestamp-*

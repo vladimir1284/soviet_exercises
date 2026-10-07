@@ -74,6 +74,7 @@
     "signInWithCode": "Iniciar sesión con Código",
     "signInWithPassword": "Iniciar sesión con Contraseña",
     "signUpWithCode": "Crear cuenta con Código",
+    "signUpWithPassword": "Crear cuenta con Contraseña",
     "noAccount": "¿No tienes cuenta?",
     "haveAccount": "¿Ya tienes cuenta?",
     "codeHint": "Te enviaremos un código de 6 dígitos a tu email.",
