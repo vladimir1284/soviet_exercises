@@ -244,7 +244,7 @@ async function getWeeklyEvaluations(
     const now = new Date(localDate + 'T23:59:59')
 
     // Calculate weeks since start
-    let weekStart = new Date(startDate)
+    const weekStart = new Date(startDate)
 
     while (weekStart < now) {
       const weekEnd = new Date(weekStart)
