@@ -20,6 +20,7 @@
     <label for="email-pw" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">
       {$_('auth.email')}
     </label>
+    <!-- svelte-ignore a11y-autofocus -->
     <input
       id="email-pw"
       type="email"

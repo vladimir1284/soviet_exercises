@@ -74,6 +74,7 @@
           disabled={isSubmitting}
         />
       {:else}
+        <!-- svelte-ignore a11y-autofocus -->
         <input
           id="password"
           type="password"
